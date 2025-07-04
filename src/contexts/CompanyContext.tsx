@@ -9,6 +9,7 @@ interface WorkingHour {
 
 export interface CompanySettings {
   name: string;
+  type: string; // Added missing type property
   address: string;
   phone: string;
   logo: string | null;
@@ -37,6 +38,7 @@ const defaultWorkingHours = {
 
 const defaultCompanySettings: CompanySettings = {
   name: "Salão Beleza & Estilo",
+  type: "Salão de Beleza", // Added default type
   address: "Rua das Flores, 123 - Centro",
   phone: "(11) 99999-9999",
   logo: null,

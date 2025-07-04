@@ -20,6 +20,7 @@ interface Service {
   active: boolean;
 }
 
+// Standardized Appointment interface
 interface Appointment {
   id: number;
   clientName: string;
@@ -59,6 +60,16 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
     disponivel: Math.max(0, 10 - todayAppointments.length),
     cancelados: appointments.filter(apt => apt.status === 'cancelled').length
   };
+
+  // Convert appointments to format expected by AppointmentsList
+  const appointmentsForList = appointments.map(apt => ({
+    time: apt.time,
+    client: apt.clientName,
+    service: apt.service,
+    professional: apt.professional,
+    status: apt.status === 'confirmed' ? 'confirmado' as const : 
+           apt.status === 'pending' ? 'pendente' as const : 'cancelado' as const
+  }));
 
   return (
     <TabsContent value="overview" className="space-y-6">
@@ -113,7 +124,7 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
           
           <WeeklySummary appointments={appointments} />
           
-          <AppointmentsList appointments={appointments} />
+          <AppointmentsList appointments={appointmentsForList} />
         </div>
         
         <div className="space-y-6">
