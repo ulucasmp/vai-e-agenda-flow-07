@@ -1,26 +1,61 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExternalLink, Upload, X, Image } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCompany } from '@/contexts/CompanyContext';
+import { useEmpresa } from '@/hooks/useEmpresa';
+import { supabase } from '@/integrations/supabase/client';
 
 const CompanyTab = () => {
   const { toast } = useToast();
-  const { companySettings, updateCompanySettings, generateBookingLink } = useCompany();
+  const { empresa } = useEmpresa();
   
   const [formData, setFormData] = useState({
-    name: companySettings.name,
-    address: companySettings.address,
-    phone: companySettings.phone,
+    name: '',
+    address: '',
+    phone: '',
   });
   
-  const [logoPreview, setLogoPreview] = useState<string | null>(companySettings.logo);
-  const [businessPhotoPreview, setBusinessPhotoPreview] = useState<string | null>(companySettings.businessPhoto);
-  const [workingHours, setWorkingHours] = useState(companySettings.workingHours);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [businessPhotoPreview, setBusinessPhotoPreview] = useState<string | null>(null);
+  const [workingHours, setWorkingHours] = useState({
+    segunda: { active: true, start: '08:00', end: '18:00' },
+    terca: { active: true, start: '08:00', end: '18:00' },
+    quarta: { active: true, start: '08:00', end: '18:00' },
+    quinta: { active: true, start: '08:00', end: '18:00' },
+    sexta: { active: true, start: '08:00', end: '18:00' },
+    sabado: { active: true, start: '08:00', end: '18:00' },
+    domingo: { active: false, start: '08:00', end: '18:00' }
+  });
+
+  // Carrega os dados da empresa quando o componente monta ou empresa muda
+  useEffect(() => {
+    if (empresa) {
+      setFormData({
+        name: empresa.nome_negocio || '',
+        address: empresa.endereco || '',
+        phone: empresa.telefone || '',
+      });
+    }
+  }, [empresa]);
+
+  const generateBookingLink = (): string => {
+    if (!empresa) return '';
+    const slug = empresa.nome_negocio
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
+      .replace(/\s+/g, '-') // Substitui espaços por hífens
+      .replace(/-+/g, '-') // Remove hífens duplicados
+      .trim();
+    
+    const currentDomain = window.location.origin;
+    return `${currentDomain}/agendamento/${slug}`;
+  };
 
   const bookingLink = generateBookingLink();
 
@@ -93,20 +128,40 @@ const CompanyTab = () => {
     }));
   };
 
-  const handleSaveChanges = () => {
-    updateCompanySettings({
-      name: formData.name,
-      address: formData.address,
-      phone: formData.phone,
-      logo: logoPreview,
-      businessPhoto: businessPhotoPreview,
-      workingHours: workingHours
-    });
+  const handleSaveChanges = async () => {
+    if (!empresa) return;
 
-    toast({
-      title: "Alterações salvas",
-      description: "As informações da empresa foram salvas com sucesso!"
-    });
+    try {
+      const { error } = await supabase
+        .from('empresas')
+        .update({
+          nome_negocio: formData.name,
+          endereco: formData.address,
+          telefone: formData.phone,
+        })
+        .eq('id', empresa.id);
+
+      if (error) {
+        toast({
+          title: "Erro ao salvar",
+          description: "Não foi possível salvar as alterações. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Alterações salvas",
+        description: "As informações da empresa foram salvas com sucesso!"
+      });
+    } catch (error) {
+      console.error('Erro ao salvar empresa:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCopyLink = async () => {
@@ -124,6 +179,16 @@ const CompanyTab = () => {
   const handleViewBookingPage = () => {
     window.open(bookingLink, '_blank', 'noopener,noreferrer');
   };
+
+  if (!empresa) {
+    return (
+      <TabsContent value="company" className="space-y-6">
+        <div className="text-center py-8">
+          <p>Carregando dados da empresa...</p>
+        </div>
+      </TabsContent>
+    );
+  }
 
   return (
     <TabsContent value="company" className="space-y-6">

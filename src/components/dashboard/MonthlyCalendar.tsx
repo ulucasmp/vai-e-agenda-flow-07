@@ -15,29 +15,8 @@ interface MonthlyCalendarProps {
 const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
 
-  // Dados mockados de agendamentos por dia (em produção viria do backend)
-  const appointmentsByDate: Record<string, number> = {
-    '2024-07-01': 3,
-    '2024-07-02': 5,
-    '2024-07-03': 2,
-    '2024-07-04': 7,
-    '2024-07-05': 4,
-    '2024-07-08': 6,
-    '2024-07-09': 3,
-    '2024-07-10': 8,
-    '2024-07-11': 2,
-    '2024-07-12': 5,
-    '2024-07-15': 4,
-    '2024-07-16': 6,
-    '2024-07-17': 3,
-    '2024-07-18': 7,
-    '2024-07-19': 9,
-    '2024-07-22': 5,
-    '2024-07-23': 4,
-    '2024-07-24': 6,
-    '2024-07-25': 3,
-    '2024-07-26': 8,
-  };
+  // Para empresas novas, não há agendamentos - calendario limpo
+  const appointmentsByDate: Record<string, number> = {};
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -136,6 +115,7 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) =
           <p>• Clique em uma data para ver os agendamentos do dia</p>
           <p>• Os números vermelhos indicam a quantidade de agendamentos</p>
           <p>• Azul claro = hoje | Azul escuro = data selecionada</p>
+          <p>• Seu calendário está limpo, aguardando os primeiros agendamentos!</p>
         </div>
       </CardContent>
     </Card>

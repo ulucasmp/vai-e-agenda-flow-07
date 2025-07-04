@@ -20,41 +20,8 @@ interface DayScheduleProps {
 }
 
 const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
-  // Dados mockados de agendamentos do dia (em produção viria do backend)
-  const dayAppointments: DayAppointment[] = [
-    { time: '09:00', client: 'Maria Silva', service: 'Corte + Escova', professional: 'Ana Costa', status: 'confirmado', price: 65 },
-    { time: '10:30', client: 'João Santos', service: 'Corte + Barba', professional: 'Carlos Lima', status: 'confirmado', price: 50 },
-    { time: '11:00', client: 'Pedro Oliveira', service: 'Barba', professional: 'Carlos Lima', status: 'pendente', price: 25 },
-    { time: '14:00', client: 'Ana Paula', service: 'Coloração', professional: 'Ana Costa', status: 'confirmado', price: 80 },
-    { time: '15:30', client: 'Roberto Silva', service: 'Corte Masculino', professional: 'Carlos Lima', status: 'confirmado', price: 35 },
-    { time: '16:00', client: 'Lucia Santos', service: 'Escova Progressiva', professional: 'Ana Costa', status: 'pendente', price: 120 },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmado':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'pendente':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'cancelado':
-        return 'bg-red-100 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  };
-
-  const getStatusDot = (status: string) => {
-    switch (status) {
-      case 'confirmado':
-        return 'bg-green-500';
-      case 'pendente':
-        return 'bg-yellow-500';
-      case 'cancelado':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
+  // Para empresas novas, não há agendamentos - lista vazia
+  const dayAppointments: DayAppointment[] = [];
 
   const totalRevenue = dayAppointments
     .filter(apt => apt.status === 'confirmado')
@@ -88,8 +55,16 @@ const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
       <CardContent>
         <div className="space-y-3">
           {dayAppointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>Nenhum agendamento para este dia</p>
+            <div className="text-center py-12 text-gray-500">
+              <div className="mb-4">
+                <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum agendamento para este dia</h3>
+              <p className="text-sm text-gray-500">
+                Quando seus clientes agendarem pelo seu link, os agendamentos aparecerão aqui.
+              </p>
             </div>
           ) : (
             dayAppointments.map((appointment, index) => (
@@ -111,8 +86,15 @@ const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
                     R$ {appointment.price}
                   </span>
                   <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${getStatusDot(appointment.status)}`}></div>
-                    <Badge className={`text-xs font-medium border ${getStatusColor(appointment.status)}`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      appointment.status === 'confirmado' ? 'bg-green-500' :
+                      appointment.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}></div>
+                    <Badge className={`text-xs font-medium border ${
+                      appointment.status === 'confirmado' ? 'bg-green-100 text-green-700 border-green-200' :
+                      appointment.status === 'pendente' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                      'bg-red-100 text-red-700 border-red-200'
+                    }`}>
                       {appointment.status}
                     </Badge>
                   </div>
