@@ -42,12 +42,16 @@ const App = () => (
                   <EmpresaSetup />
                 </ProtectedRoute>
               } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/dashboard-new" element={
                 <ProtectedRoute>
                   <DashboardNew />
                 </ProtectedRoute>
               } />
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/recuperar-senha" element={<RecuperarSenha />} />
               <Route path="/sobre" element={<About />} />
               <Route path="/contato" element={<Contact />} />

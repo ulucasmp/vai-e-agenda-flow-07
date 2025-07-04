@@ -1,60 +1,86 @@
 
 import React from 'react';
-import { Calendar, ExternalLink, Copy, Share2, Eye } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ExternalLink, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingLinkCardProps {
   companyName: string;
-  bookingLink: string;
-  onCopyLink: () => void;
-  onShareLink: () => void;
-  onViewBookingPage: () => void;
 }
 
-const BookingLinkCard = ({ companyName, bookingLink, onCopyLink, onShareLink, onViewBookingPage }: BookingLinkCardProps) => {
+const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
+  const { toast } = useToast();
+  
+  // Generate a slug from company name
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const companySlug = generateSlug(companyName);
+  const bookingLink = `${window.location.origin}/agendamento/${companySlug}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(bookingLink);
+      toast({
+        title: "Link copiado!",
+        description: "O link de agendamento foi copiado para a área de transferência.",
+      });
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+      toast({
+        title: "Erro ao copiar link",
+        description: "Não foi possível copiar o link. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewPage = () => {
+    window.open(bookingLink, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <Card className="mb-8 border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center shadow-sm">
-            <Calendar className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Seu Link de Agendamento</h3>
-            <p className="text-sm text-gray-600">Compartilhe com seus clientes para agendamentos online</p>
-          </div>
+    <Card className="border-blue-100 shadow-sm">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <ExternalLink className="w-5 h-5 text-blue-500" />
+          Link de Agendamento
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+          <p className="text-sm text-gray-600 mb-2">Seu link personalizado:</p>
+          <code className="text-sm text-blue-600 bg-white p-2 rounded border block break-all">
+            {bookingLink}
+          </code>
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-blue-100 mb-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <ExternalLink className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700">Seu link personalizado:</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <code className="flex-1 bg-gray-50 p-3 rounded-lg text-sm text-blue-600 font-mono border border-gray-200 break-all">
-              {bookingLink}
-            </code>
-            <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={onCopyLink} className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                <Copy className="w-4 h-4 mr-1" />
-                Copiar
-              </Button>
-              <Button variant="outline" size="sm" onClick={onShareLink} className="border-green-200 text-green-600 hover:bg-green-50">
-                <Share2 className="w-4 h-4 mr-1" />
-                WhatsApp
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center">
+        <p className="text-sm text-gray-600">
+          Compartilhe este link com seus clientes para que eles possam agendar seus serviços online.
+        </p>
+        
+        <div className="flex gap-2">
           <Button 
-            onClick={onViewBookingPage}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-sm"
+            variant="outline" 
+            onClick={handleCopyLink}
+            className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50"
           >
-            <Eye className="w-4 h-4 mr-2" />
-            Visualizar Página de Agendamento
+            <Copy className="w-4 h-4 mr-2" />
+            Copiar Link
+          </Button>
+          <Button 
+            onClick={handleViewPage}
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Visualizar
           </Button>
         </div>
       </CardContent>

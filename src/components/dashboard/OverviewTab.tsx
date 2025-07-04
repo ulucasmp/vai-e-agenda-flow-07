@@ -1,92 +1,124 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-import AppointmentsList from './AppointmentsList';
-import WeeklyCharts from './WeeklyCharts';
+import StatsCards from './StatsCards';
 import WeeklySummary from './WeeklySummary';
-import DaySchedule from './DaySchedule';
+import BookingLinkCard from './BookingLinkCard';
+import AppointmentsList from './AppointmentsList';
 
-interface WeeklyData {
-  day: string;
-  agendamentos: number;
-  receita: number;
-  disponivel: number;
+interface Professional {
+  id: string;
+  name: string;
+  specialty: string;
+  active: boolean;
+}
+
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  duration: number;
+  active: boolean;
 }
 
 interface Appointment {
-  time: string;
-  client: string;
+  id: number;
+  clientName: string;
   service: string;
   professional: string;
-  status: 'confirmado' | 'pendente' | 'cancelado';
+  date: string;
+  time: string;
+  status: 'confirmed' | 'pending' | 'cancelled';
+}
+
+interface CompanyData {
+  name: string;
+  type: string;
+  phone: string;
+  address: string;
 }
 
 interface OverviewTabProps {
-  nextAppointments: Appointment[];
-  weeklyData: WeeklyData[];
-  chartConfig: any;
+  companyData: CompanyData;
+  professionals: Professional[];
+  services: Service[];
+  appointments: Appointment[];
 }
 
-const OverviewTab = ({ nextAppointments, weeklyData, chartConfig }: OverviewTabProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const handleDayClick = (dayIndex: number) => {
-    console.log(`Dia clicado: ${dayIndex}`);
-    // Criar uma data baseada no índice do dia da semana
-    const today = new Date();
-    const currentDay = today.getDay();
-    const diff = dayIndex - currentDay;
-    const selectedDay = new Date(today);
-    selectedDay.setDate(today.getDate() + diff);
-    setSelectedDate(selectedDay);
-  };
-
-  const closeDaySchedule = () => {
-    console.log('Fechando modal de agendamentos');
-    setSelectedDate(null);
-  };
+const OverviewTab = ({ companyData, professionals, services, appointments }: OverviewTabProps) => {
+  const activeProfessionals = professionals.filter(p => p.active);
+  const activeServices = services.filter(s => s.active);
+  const todayAppointments = appointments.filter(apt => {
+    const today = new Date().toDateString();
+    return new Date(apt.date).toDateString() === today;
+  });
 
   return (
     <TabsContent value="overview" className="space-y-6">
-      <AppointmentsList appointments={nextAppointments} />
-      
-      <WeeklyCharts weeklyData={weeklyData} chartConfig={chartConfig} />
-      
-      <WeeklySummary 
-        weeklyData={weeklyData} 
-        onDayClick={handleDayClick}
-      />
-
-      {selectedDate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
-            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">
-                Agendamentos - {selectedDate.toLocaleDateString('pt-BR', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={closeDaySchedule}
-                className="hover:bg-gray-100"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <StatsCards 
+            totalProfessionals={activeProfessionals.length}
+            totalServices={activeServices.length}
+            todayAppointments={todayAppointments.length}
+            monthlyRevenue={0} // Será implementado quando tivermos sistema de pagamentos
+          />
+          
+          <WeeklySummary appointments={appointments} />
+          
+          <AppointmentsList appointments={appointments} />
+        </div>
+        
+        <div className="space-y-6">
+          <BookingLinkCard companyName={companyData.name} />
+          
+          {/* Company Quick Info */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-blue-100">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Informações da Empresa</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-600">Nome:</p>
+                <p className="font-medium">{companyData.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Tipo:</p>
+                <p className="font-medium">{companyData.type}</p>
+              </div>
+              {companyData.phone && (
+                <div>
+                  <p className="text-sm text-gray-600">Telefone:</p>
+                  <p className="font-medium">{companyData.phone}</p>
+                </div>
+              )}
+              {companyData.address && (
+                <div>
+                  <p className="text-sm text-gray-600">Endereço:</p>
+                  <p className="font-medium">{companyData.address}</p>
+                </div>
+              )}
             </div>
-            <DaySchedule 
-              selectedDate={selectedDate}
-              onClose={closeDaySchedule}
-            />
+          </div>
+
+          {/* Quick Stats */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-blue-100">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Resumo Rápido</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Profissionais Ativos:</span>
+                <span className="font-semibold">{activeProfessionals.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Serviços Disponíveis:</span>
+                <span className="font-semibold">{activeServices.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Agendamentos Hoje:</span>
+                <span className="font-semibold">{todayAppointments.length}</span>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </TabsContent>
   );
 };
