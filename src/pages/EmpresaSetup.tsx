@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { gerarSlug } from '@/utils/slugUtils';
 import Logo from '@/components/Logo';
 
 const EmpresaSetup = () => {
@@ -56,12 +57,16 @@ const EmpresaSetup = () => {
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    const nome_negocio = formData.get('nome_negocio') as string;
+    const slug = gerarSlug(nome_negocio);
+    
     const empresaData = {
       owner_id: user.id,
-      nome_negocio: formData.get('nome_negocio') as string,
+      nome_negocio,
       tipo: formData.get('tipo') as string,
       telefone: formData.get('telefone') as string || null,
       endereco: formData.get('endereco') as string || null,
+      slug,
     };
 
     const { error } = await supabase
@@ -77,7 +82,7 @@ const EmpresaSetup = () => {
     } else {
       toast({
         title: "Empresa cadastrada com sucesso!",
-        description: "Agora você pode acessar seu painel de controle.",
+        description: `Sua URL pública é: /agendamento/${slug}`,
       });
       navigate('/dashboard');
     }

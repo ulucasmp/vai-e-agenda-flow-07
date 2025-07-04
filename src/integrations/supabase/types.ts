@@ -9,6 +9,70 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          cliente_email: string | null
+          cliente_nome: string
+          cliente_telefone: string
+          created_at: string
+          data_agendamento: string
+          empresa_id: string | null
+          horario: string
+          id: string
+          profissional_id: string | null
+          servico_id: string | null
+          status: string | null
+        }
+        Insert: {
+          cliente_email?: string | null
+          cliente_nome: string
+          cliente_telefone: string
+          created_at?: string
+          data_agendamento: string
+          empresa_id?: string | null
+          horario: string
+          id?: string
+          profissional_id?: string | null
+          servico_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          cliente_email?: string | null
+          cliente_nome?: string
+          cliente_telefone?: string
+          created_at?: string
+          data_agendamento?: string
+          empresa_id?: string | null
+          horario?: string
+          id?: string
+          profissional_id?: string | null
+          servico_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_profissional_id_fkey"
+            columns: ["profissional_id"]
+            isOneToOne: false
+            referencedRelation: "profissionais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_servico_id_fkey"
+            columns: ["servico_id"]
+            isOneToOne: false
+            referencedRelation: "servicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           created_at: string
@@ -16,6 +80,7 @@ export type Database = {
           id: string
           nome_negocio: string
           owner_id: string
+          slug: string | null
           telefone: string | null
           tipo: string
         }
@@ -25,6 +90,7 @@ export type Database = {
           id?: string
           nome_negocio: string
           owner_id: string
+          slug?: string | null
           telefone?: string | null
           tipo: string
         }
@@ -34,6 +100,7 @@ export type Database = {
           id?: string
           nome_negocio?: string
           owner_id?: string
+          slug?: string | null
           telefone?: string | null
           tipo?: string
         }
@@ -70,6 +137,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profissionais_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servicos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string
+          duracao_em_minutos: number
+          empresa_id: string | null
+          id: string
+          nome: string
+          preco: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string
+          duracao_em_minutos: number
+          empresa_id?: string | null
+          id?: string
+          nome: string
+          preco: number
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string
+          duracao_em_minutos?: number
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          preco?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "servicos_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
