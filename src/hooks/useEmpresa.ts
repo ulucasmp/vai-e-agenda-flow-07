@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +8,7 @@ interface Empresa {
   tipo: string;
   telefone: string | null;
   endereco: string | null;
+  slug: string | null; // Added slug property
   created_at: string;
 }
 
@@ -17,6 +17,8 @@ interface Profissional {
   empresa_id: string;
   nome: string;
   especialidade: string;
+  telefone: string | null;
+  email: string | null;
   horarios_disponiveis: any;
   ativo: boolean;
   created_at: string;
