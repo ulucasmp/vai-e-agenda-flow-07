@@ -58,6 +58,8 @@ const EmpresaSetup = () => {
 
     const formData = new FormData(e.currentTarget);
     const nome_negocio = formData.get('nome_negocio') as string;
+    
+    // Gerar slug automaticamente a partir do nome do negócio
     const slug = gerarSlug(nome_negocio);
     
     const empresaData = {
@@ -66,14 +68,17 @@ const EmpresaSetup = () => {
       tipo: formData.get('tipo') as string,
       telefone: formData.get('telefone') as string || null,
       endereco: formData.get('endereco') as string || null,
-      slug,
+      slug, // Slug gerado automaticamente
     };
+
+    console.log('Dados da empresa a serem inseridos:', empresaData);
 
     const { error } = await supabase
       .from('empresas')
       .insert([empresaData]);
 
     if (error) {
+      console.error('Erro ao cadastrar empresa:', error);
       toast({
         title: "Erro ao cadastrar empresa",
         description: error.message,
@@ -115,7 +120,7 @@ const EmpresaSetup = () => {
           <CardHeader>
             <CardTitle>Dados da Empresa</CardTitle>
             <CardDescription>
-              Estas informações aparecerão para seus clientes
+              Estas informações aparecerão para seus clientes. O link público será gerado automaticamente baseado no nome da empresa.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -130,6 +135,9 @@ const EmpresaSetup = () => {
                   placeholder="Ex: Salão Beleza Total"
                   disabled={isLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Será usado para gerar sua URL pública automaticamente
+                </p>
               </div>
 
               <div>

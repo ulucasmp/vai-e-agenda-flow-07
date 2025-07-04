@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Upload, X, Image } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEmpresa } from '@/hooks/useEmpresa';
 import { supabase } from '@/integrations/supabase/client';
+import { gerarSlug } from '@/utils/slugUtils';
 
 const CompanyTab = () => {
   const { toast } = useToast();
@@ -43,18 +43,9 @@ const CompanyTab = () => {
   }, [empresa]);
 
   const generateBookingLink = (): string => {
-    if (!empresa) return '';
-    const slug = empresa.nome_negocio
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
-      .replace(/\s+/g, '-') // Substitui espaços por hífens
-      .replace(/-+/g, '-') // Remove hífens duplicados
-      .trim();
-    
+    if (!empresa?.slug) return '';
     const currentDomain = window.location.origin;
-    return `${currentDomain}/agendamento/${slug}`;
+    return `${currentDomain}/agendamento/${empresa.slug}`;
   };
 
   const bookingLink = generateBookingLink();
@@ -132,12 +123,16 @@ const CompanyTab = () => {
     if (!empresa) return;
 
     try {
+      // Gerar novo slug se o nome mudou
+      const novoSlug = gerarSlug(formData.name);
+      
       const { error } = await supabase
         .from('empresas')
         .update({
           nome_negocio: formData.name,
           endereco: formData.address,
           telefone: formData.phone,
+          slug: novoSlug, // Atualizar slug automaticamente
         })
         .eq('id', empresa.id);
 
@@ -152,7 +147,7 @@ const CompanyTab = () => {
 
       toast({
         title: "Alterações salvas",
-        description: "As informações da empresa foram salvas com sucesso!"
+        description: "As informações da empresa foram salvas com sucesso! O link de agendamento foi atualizado."
       });
     } catch (error) {
       console.error('Erro ao salvar empresa:', error);
