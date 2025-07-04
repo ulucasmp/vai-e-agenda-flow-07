@@ -2,20 +2,46 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface WeeklyData {
-  day: string;
-  agendamentos: number;
-  receita: number;
-  disponivel: number;
+interface Appointment {
+  id: number;
+  clientName: string;
+  service: string;
+  professional: string;
+  date: string;
+  time: string;
+  status: 'confirmed' | 'pending' | 'cancelled';
 }
 
 interface WeeklySummaryProps {
-  weeklyData: WeeklyData[];
-  onDayClick: (dayIndex: number) => void;
+  appointments: Appointment[];
 }
 
-const WeeklySummary = ({ weeklyData, onDayClick }: WeeklySummaryProps) => {
-  // Função para calcular a data real baseada no índice do dia
+const WeeklySummary = ({ appointments }: WeeklySummaryProps) => {
+  // Generate weekly data from appointments
+  const generateWeeklyData = () => {
+    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const today = new Date();
+    
+    return days.map((day, index) => {
+      const dayDate = new Date(today);
+      dayDate.setDate(today.getDate() - today.getDay() + index);
+      
+      const dayAppointments = appointments.filter(apt => {
+        const aptDate = new Date(apt.date);
+        return aptDate.toDateString() === dayDate.toDateString();
+      });
+
+      return {
+        day,
+        agendamentos: dayAppointments.length,
+        receita: dayAppointments.length * 50, // Valor médio estimado
+        disponivel: Math.max(0, 8 - dayAppointments.length)
+      };
+    });
+  };
+
+  const weeklyData = generateWeeklyData();
+
   const getDayDate = (dayIndex: number) => {
     const today = new Date();
     const currentDay = today.getDay();
@@ -27,7 +53,6 @@ const WeeklySummary = ({ weeklyData, onDayClick }: WeeklySummaryProps) => {
 
   const handleDayClick = (dayIndex: number) => {
     console.log(`Clicando no dia ${dayIndex}`);
-    onDayClick(dayIndex);
   };
 
   return (

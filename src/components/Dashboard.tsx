@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompany } from '@/contexts/CompanyContext';
@@ -14,12 +15,10 @@ import ServicesTab from './dashboard/ServicesTab';
 import ProfessionalsTab from './dashboard/ProfessionalsTab';
 
 const Dashboard = () => {
-  const { companySettings, generateBookingLink } = useCompany();
+  const { companySettings } = useCompany();
   const { toast } = useToast();
 
   // Dados mockados - em produção viriam do backend
-  const bookingLink = generateBookingLink();
-
   const todayStats = {
     agendamentos: 8,
     receita: 540,
@@ -27,20 +26,10 @@ const Dashboard = () => {
     cancelados: 1
   };
 
-  const weeklyData = [
-    { day: 'Seg', agendamentos: 12, receita: 850, disponivel: 8 },
-    { day: 'Ter', agendamentos: 8, receita: 620, disponivel: 12 },
-    { day: 'Qua', agendamentos: 15, receita: 1200, disponivel: 5 },
-    { day: 'Qui', agendamentos: 10, receita: 750, disponivel: 10 },
-    { day: 'Sex', agendamentos: 18, receita: 1400, disponivel: 2 },
-    { day: 'Sáb', agendamentos: 22, receita: 1650, disponivel: 3 },
-    { day: 'Dom', agendamentos: 5, receita: 380, disponivel: 15 },
-  ];
-
-  const nextAppointments = [
-    { time: '14:00', client: 'Maria Silva', service: 'Corte + Escova', professional: 'Ana Costa', status: 'confirmado' as const },
-    { time: '15:30', client: 'João Santos', service: 'Corte + Barba', professional: 'Carlos Lima', status: 'confirmado' as const },
-    { time: '16:00', client: 'Pedro Oliveira', service: 'Barba', professional: 'Carlos Lima', status: 'pendente' as const },
+  const appointments = [
+    { id: 1, clientName: 'Maria Silva', service: 'Corte + Escova', professional: 'Ana Costa', date: new Date().toISOString(), time: '14:00', status: 'confirmed' as const },
+    { id: 2, clientName: 'João Santos', service: 'Corte + Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '15:30', status: 'confirmed' as const },
+    { id: 3, clientName: 'Pedro Oliveira', service: 'Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '16:00', status: 'pending' as const },
   ];
 
   const services = [
@@ -55,49 +44,11 @@ const Dashboard = () => {
     { id: 2, name: 'Carlos Lima', specialty: 'Barbeiro', phone: '(11) 88888-8888', email: 'carlos@exemplo.com', active: true },
   ];
 
-  const chartConfig = {
-    agendamentos: {
-      label: "Agendamentos",
-      color: "#3b82f6",
-    },
-    receita: {
-      label: "Receita (R$)",
-      color: "#10b981",
-    },
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(bookingLink);
-      toast({
-        title: "Link copiado!",
-        description: "O link de agendamento foi copiado para a área de transferência.",
-      });
-    } catch (error) {
-      console.error('Erro ao copiar link:', error);
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleShareLink = () => {
-    const message = `Olá! Agende seu horário no ${companySettings.name} através do nosso link: ${bookingLink}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    
-    // Abre o WhatsApp em uma nova aba
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    
-    toast({
-      title: "WhatsApp aberto!",
-      description: "O WhatsApp foi aberto com sua mensagem de agendamento.",
-    });
-  };
-
-  const handleViewBookingPage = () => {
-    window.open(bookingLink, '_blank', 'noopener,noreferrer');
+  const companyData = {
+    name: companySettings.name,
+    type: companySettings.type,
+    phone: companySettings.phone,
+    address: companySettings.address
   };
 
   return (
@@ -105,13 +56,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <DashboardHeader companyName={companySettings.name} />
         
-        <BookingLinkCard 
-          companyName={companySettings.name}
-          bookingLink={bookingLink}
-          onCopyLink={handleCopyLink}
-          onShareLink={handleShareLink}
-          onViewBookingPage={handleViewBookingPage}
-        />
+        <BookingLinkCard companyName={companySettings.name} />
 
         <StatsCards todayStats={todayStats} />
 
@@ -125,9 +70,15 @@ const Dashboard = () => {
           </TabsList>
 
           <OverviewTab 
-            nextAppointments={nextAppointments}
-            weeklyData={weeklyData}
-            chartConfig={chartConfig}
+            companyData={companyData}
+            professionals={professionals.map(prof => ({
+              id: prof.id.toString(),
+              name: prof.name,
+              specialty: prof.specialty,
+              active: prof.active
+            }))}
+            services={services}
+            appointments={appointments}
           />
 
           <CalendarTab />

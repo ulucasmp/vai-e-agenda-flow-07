@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import StatsCards from './StatsCards';
 import WeeklySummary from './WeeklySummary';
 import BookingLinkCard from './BookingLinkCard';
 import AppointmentsList from './AppointmentsList';
@@ -53,16 +52,64 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
     return new Date(apt.date).toDateString() === today;
   });
 
+  // Calculate stats for StatsCards
+  const todayStats = {
+    agendamentos: todayAppointments.length,
+    receita: todayAppointments.length * 75, // Valor médio estimado
+    disponivel: Math.max(0, 10 - todayAppointments.length),
+    cancelados: appointments.filter(apt => apt.status === 'cancelled').length
+  };
+
   return (
     <TabsContent value="overview" className="space-y-6">
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <StatsCards 
-            totalProfessionals={activeProfessionals.length}
-            totalServices={activeServices.length}
-            todayAppointments={todayAppointments.length}
-            monthlyRevenue={0} // Será implementado quando tivermos sistema de pagamentos
-          />
+          {/* Stats cards moved here for better layout */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Resumo do Dia</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Stats cards inline to avoid component mismatch */}
+              <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Agendamentos</p>
+                    <p className="text-2xl font-bold text-blue-600">{todayStats.agendamentos}</p>
+                    <p className="text-xs text-gray-500">hoje</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border border-green-100 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Receita do Dia</p>
+                    <p className="text-2xl font-bold text-green-600">R$ {todayStats.receita}</p>
+                    <p className="text-xs text-gray-500">faturamento</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Horários Livres</p>
+                    <p className="text-2xl font-bold text-blue-500">{todayStats.disponivel}</p>
+                    <p className="text-xs text-gray-500">disponíveis hoje</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg border border-red-100 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Cancelamentos</p>
+                    <p className="text-2xl font-bold text-red-500">{todayStats.cancelados}</p>
+                    <p className="text-xs text-gray-500">hoje</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           
           <WeeklySummary appointments={appointments} />
           
