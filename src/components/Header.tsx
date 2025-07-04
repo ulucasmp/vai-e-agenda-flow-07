@@ -21,13 +21,13 @@ const Header = () => {
               className="text-xs px-3 py-2 sm:text-sm sm:px-4 sm:py-2"
               asChild
             >
-              <Link to="/login">Entrar</Link>
+              <Link to="/auth">Entrar</Link>
             </Button>
             <Button 
               className="bg-blue-600 hover:bg-blue-700 border-0 transition-colors text-xs px-3 py-2 sm:text-sm sm:px-4 sm:py-2 text-white"
               asChild
             >
-              <Link to="/cadastro">Começar Grátis</Link>
+              <Link to="/auth">Começar Grátis</Link>
             </Button>
           </div>
         </div>

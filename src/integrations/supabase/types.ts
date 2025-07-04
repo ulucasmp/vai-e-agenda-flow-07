@@ -9,7 +9,74 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      empresas: {
+        Row: {
+          created_at: string
+          endereco: string | null
+          id: string
+          nome_negocio: string
+          owner_id: string
+          telefone: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          nome_negocio: string
+          owner_id: string
+          telefone?: string | null
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          nome_negocio?: string
+          owner_id?: string
+          telefone?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
+      profissionais: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          empresa_id: string
+          especialidade: string
+          horarios_disponiveis: Json | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id: string
+          especialidade: string
+          horarios_disponiveis?: Json | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          especialidade?: string
+          horarios_disponiveis?: Json | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profissionais_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
