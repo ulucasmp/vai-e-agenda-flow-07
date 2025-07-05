@@ -9,7 +9,7 @@ interface WorkingHour {
 
 export interface CompanySettings {
   name: string;
-  type: string; // Added missing type property
+  type: string;
   address: string;
   phone: string;
   logo: string | null;
@@ -38,7 +38,7 @@ const defaultWorkingHours = {
 
 const defaultCompanySettings: CompanySettings = {
   name: "Salão Beleza & Estilo",
-  type: "Salão de Beleza", // Added default type
+  type: "Salão de Beleza",
   address: "Rua das Flores, 123 - Centro",
   phone: "(11) 99999-9999",
   logo: null,
@@ -54,17 +54,20 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return saved ? JSON.parse(saved) : defaultCompanySettings;
   });
 
+  // DEPRECATED: Este método não deve mais ser usado - manter para compatibilidade
   const generateSlug = (name: string): string => {
+    console.warn('generateSlug está deprecated - use sempre o slug do banco de dados');
     return name
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
-      .replace(/\s+/g, '-') // Substitui espaços por hífens
-      .replace(/-+/g, '-') // Remove hífens duplicados
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
       .trim();
   };
 
+  // DEPRECATED: Use sempre o slug do banco de dados
   const companySlug = generateSlug(companySettings.name);
 
   const updateCompanySettings = (newSettings: Partial<CompanySettings>) => {
@@ -73,9 +76,10 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem('companySettings', JSON.stringify(updatedSettings));
   };
 
+  // DEPRECATED: Este método não deve mais ser usado
   const generateBookingLink = (): string => {
+    console.warn('generateBookingLink está deprecated - use sempre o slug do banco de dados');
     const slug = generateSlug(companySettings.name);
-    // Gera um link de demonstração usando o atual domínio + uma rota de agendamento
     const currentDomain = window.location.origin;
     return `${currentDomain}/agendamento/${slug}`;
   };
@@ -88,8 +92,8 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <CompanyContext.Provider value={{
       companySettings,
       updateCompanySettings,
-      generateBookingLink,
-      companySlug
+      generateBookingLink, // Manter para compatibilidade, mas deprecated
+      companySlug // Manter para compatibilidade, mas deprecated
     }}>
       {children}
     </CompanyContext.Provider>

@@ -42,6 +42,7 @@ const CompanyTab = () => {
     }
   }, [empresa]);
 
+  // Use sempre o slug salvo no banco de dados
   const generateBookingLink = (): string => {
     if (!empresa?.slug) return '';
     const currentDomain = window.location.origin;
@@ -123,14 +124,14 @@ const CompanyTab = () => {
     if (!empresa) return;
 
     try {
-      // Não atualizar o slug - ele permanece fixo após a criação
+      // IMPORTANTE: Não atualizar o slug - ele permanece fixo após a criação
       const { error } = await supabase
         .from('empresas')
         .update({
           nome_negocio: formData.name,
           endereco: formData.address,
           telefone: formData.phone,
-          // slug não é atualizado - permanece fixo
+          // slug NÃO é atualizado - permanece fixo para sempre
         })
         .eq('id', empresa.id);
 
@@ -158,6 +159,15 @@ const CompanyTab = () => {
   };
 
   const handleCopyLink = async () => {
+    if (!bookingLink) {
+      toast({
+        title: "Link não disponível",
+        description: "O slug da empresa não foi encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(bookingLink);
       toast({
@@ -170,6 +180,14 @@ const CompanyTab = () => {
   };
 
   const handleViewBookingPage = () => {
+    if (!bookingLink) {
+      toast({
+        title: "Link não disponível",
+        description: "O slug da empresa não foi encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
     window.open(bookingLink, '_blank', 'noopener,noreferrer');
   };
 
@@ -377,36 +395,45 @@ const CompanyTab = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-100">
-              <p className="text-sm text-gray-600 mb-2">Seu link personalizado fixo:</p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-white p-2 rounded border text-sm text-blue-600 break-all">
-                  {bookingLink}
-                </code>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                  onClick={handleCopyLink}
-                >
-                  Copiar
-                </Button>
+            {bookingLink ? (
+              <>
+                <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-100">
+                  <p className="text-sm text-gray-600 mb-2">Seu link personalizado fixo:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-white p-2 rounded border text-sm text-blue-600 break-all">
+                      {bookingLink}
+                    </code>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                      onClick={handleCopyLink}
+                    >
+                      Copiar
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Compartilhe este link com seus clientes para que eles possam agendar diretamente. 
+                  <strong> Este link é fixo e não muda mesmo que você altere o nome da empresa.</strong>
+                </p>
+                <div className="space-y-2">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={handleViewBookingPage}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Visualizar Página de Agendamento
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Slug da empresa não encontrado.</p>
+                <p className="text-sm text-gray-500 mt-2">Entre em contato com o suporte.</p>
               </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Compartilhe este link com seus clientes para que eles possam agendar diretamente. 
-              <strong> Este link é fixo e não muda mesmo que você altere o nome da empresa.</strong>
-            </p>
-            <div className="space-y-2">
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={handleViewBookingPage}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Visualizar Página de Agendamento
-              </Button>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

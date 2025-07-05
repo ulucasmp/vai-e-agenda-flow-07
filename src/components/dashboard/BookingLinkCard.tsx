@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useEmpresa } from '@/hooks/useEmpresa';
 
 interface BookingLinkCardProps {
   companyName: string;
@@ -11,21 +12,21 @@ interface BookingLinkCardProps {
 
 const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
   const { toast } = useToast();
+  const { empresa } = useEmpresa();
   
-  // Generate a slug from company name
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  };
-
-  const companySlug = generateSlug(companyName);
-  const bookingLink = `${window.location.origin}/agendamento/${companySlug}`;
+  // Use o slug salvo no banco de dados, nunca gere automaticamente
+  const bookingLink = empresa?.slug ? `${window.location.origin}/agendamento/${empresa.slug}` : '';
 
   const handleCopyLink = async () => {
+    if (!bookingLink) {
+      toast({
+        title: "Link não disponível",
+        description: "O slug da empresa não foi encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(bookingLink);
       toast({
@@ -43,8 +44,34 @@ const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
   };
 
   const handleViewPage = () => {
+    if (!bookingLink) {
+      toast({
+        title: "Link não disponível",
+        description: "O slug da empresa não foi encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
     window.open(bookingLink, '_blank', 'noopener,noreferrer');
   };
+
+  if (!empresa?.slug) {
+    return (
+      <Card className="border-blue-100 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ExternalLink className="w-5 h-5 text-blue-500" />
+            Link de Agendamento
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">
+            Slug da empresa não encontrado. Entre em contato com o suporte.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-blue-100 shadow-sm">
