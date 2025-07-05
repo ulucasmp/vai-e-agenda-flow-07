@@ -5,11 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Logo from './Logo';
 
 const Header = () => {
-  const { user, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const { user } = useAuth();
 
   return (
     <header className="bg-white sticky top-0 z-50">
@@ -21,29 +17,9 @@ const Header = () => {
             <Logo size="md" variant="full" className="hidden sm:block" />
           </Link>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Only show login/signup for non-authenticated users */}
           <div className="flex items-center space-x-2 sm:space-x-4">
-            {user ? (
-              <>
-                <span className="text-sm text-gray-600 hidden sm:inline">
-                  {user.email}
-                </span>
-                <Button 
-                  variant="outline" 
-                  className="text-xs px-3 py-2 sm:text-sm sm:px-4 sm:py-2"
-                  asChild
-                >
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={handleSignOut}
-                  className="text-xs px-3 py-2 sm:text-sm sm:px-4 sm:py-2"
-                >
-                  Sair
-                </Button>
-              </>
-            ) : (
+            {!user && (
               <>
                 <Button 
                   variant="outline" 
