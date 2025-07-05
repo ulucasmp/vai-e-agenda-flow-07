@@ -61,12 +61,37 @@ const Dashboard = () => {
         <StatsCards todayStats={todayStats} />
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white border border-blue-100 shadow-sm">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">Visão Geral</TabsTrigger>
-            <TabsTrigger value="calendar" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">Calendário</TabsTrigger>
-            <TabsTrigger value="company" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">Empresa</TabsTrigger>
-            <TabsTrigger value="services" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">Serviços</TabsTrigger>
-            <TabsTrigger value="professionals" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">Profissionais</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white border border-blue-100 shadow-sm gap-1 p-1 h-auto">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
+            >
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calendar" 
+              className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
+            >
+              Calendário
+            </TabsTrigger>
+            <TabsTrigger 
+              value="company" 
+              className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
+            >
+              Empresa
+            </TabsTrigger>
+            <TabsTrigger 
+              value="services" 
+              className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
+            >
+              Serviços
+            </TabsTrigger>
+            <TabsTrigger 
+              value="professionals" 
+              className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
+            >
+              Profissionais
+            </TabsTrigger>
           </TabsList>
 
           <OverviewTab 

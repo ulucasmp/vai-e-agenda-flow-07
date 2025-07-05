@@ -122,9 +122,10 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
             </div>
           </div>
           
-          <WeeklySummary appointments={appointments} />
-          
+          {/* Próximos Agendamentos antes do Resumo da Semana */}
           <AppointmentsList appointments={appointmentsForList} />
+          
+          <WeeklySummary appointments={appointments} />
         </div>
         
         <div className="space-y-6">
