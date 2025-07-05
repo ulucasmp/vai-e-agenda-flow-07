@@ -36,66 +36,110 @@ const BookingPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCompanyData = async () => {
-      if (!slug) return;
+      if (!slug) {
+        console.error('BookingPage: Slug não fornecido');
+        setError('Slug da empresa não encontrado na URL');
+        setLoading(false);
+        return;
+      }
+
+      console.log('BookingPage: Buscando empresa com slug:', slug);
 
       try {
         // Buscar empresa pelo slug
         const { data: empresaData, error: empresaError } = await supabase
           .from('empresas')
-          .select('*')
+          .select('id, nome_negocio, tipo, telefone, endereco, slug')
           .eq('slug', slug)
           .single();
 
-        if (empresaError || !empresaData) {
+        console.log('BookingPage: Resultado da busca da empresa:', { empresaData, empresaError });
+
+        if (empresaError) {
+          console.error('BookingPage: Erro ao buscar empresa:', empresaError);
+          if (empresaError.code === 'PGRST116') {
+            setError('Empresa não encontrada');
+            toast({
+              title: "Empresa não encontrada",
+              description: "Esta página de agendamento não existe ou foi desativada.",
+              variant: "destructive",
+            });
+          } else {
+            setError('Erro ao carregar dados da empresa');
+            toast({
+              title: "Erro ao carregar dados",
+              description: "Ocorreu um erro ao carregar as informações da empresa.",
+              variant: "destructive",
+            });
+          }
+          setLoading(false);
+          return;
+        }
+
+        if (!empresaData) {
+          console.error('BookingPage: Empresa não encontrada para o slug:', slug);
+          setError('Empresa não encontrada');
           toast({
             title: "Empresa não encontrada",
             description: "Esta página de agendamento não existe.",
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
 
+        console.log('BookingPage: Empresa encontrada:', empresaData);
         setEmpresa(empresaData);
 
         // Buscar profissionais da empresa
-        const { data: profissionaisData } = await supabase
+        const { data: profissionaisData, error: profissionaisError } = await supabase
           .from('profissionais')
-          .select('*')
+          .select('id, nome, especialidade')
           .eq('empresa_id', empresaData.id)
           .eq('ativo', true);
 
-        if (profissionaisData) {
+        console.log('BookingPage: Profissionais encontrados:', { profissionaisData, profissionaisError });
+
+        if (profissionaisData && !profissionaisError) {
           setProfessionals(profissionaisData.map(prof => ({
             id: prof.id,
             name: prof.nome,
             specialty: prof.especialidade
           })));
+        } else if (profissionaisError) {
+          console.error('BookingPage: Erro ao buscar profissionais:', profissionaisError);
         }
 
         // Buscar serviços da empresa
-        const { data: servicosData } = await supabase
+        const { data: servicosData, error: servicosError } = await supabase
           .from('servicos')
-          .select('*')
+          .select('id, nome, preco, duracao_em_minutos')
           .eq('empresa_id', empresaData.id)
           .eq('ativo', true);
 
-        if (servicosData) {
+        console.log('BookingPage: Serviços encontrados:', { servicosData, servicosError });
+
+        if (servicosData && !servicosError) {
           setServices(servicosData.map(servico => ({
             id: servico.id,
             name: servico.nome,
             price: Number(servico.preco),
             duration: servico.duracao_em_minutos
           })));
+        } else if (servicosError) {
+          console.error('BookingPage: Erro ao buscar serviços:', servicosError);
         }
 
       } catch (error) {
-        console.error('Erro ao carregar dados da empresa:', error);
+        console.error('BookingPage: Erro geral ao carregar dados:', error);
+        setError('Erro inesperado ao carregar dados');
         toast({
           title: "Erro ao carregar dados",
-          description: "Ocorreu um erro ao carregar as informações da empresa.",
+          description: "Ocorreu um erro inesperado ao carregar as informações da empresa.",
           variant: "destructive",
         });
       } finally {
@@ -118,17 +162,31 @@ const BookingPage = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando informações...</p>
+          <p className="text-sm text-gray-500 mt-2">Buscando empresa: {slug}</p>
         </div>
       </div>
     );
   }
 
-  if (!empresa) {
+  if (error || !empresa) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-8 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h1>
-          <p className="text-gray-600">Esta página de agendamento não existe ou foi desativada.</p>
+          <p className="text-gray-600 mb-4">
+            {error || 'Esta página de agendamento não existe ou foi desativada.'}
+          </p>
+          <div className="bg-gray-100 p-3 rounded-lg mb-4">
+            <p className="text-sm text-gray-600">
+              <strong>Slug buscado:</strong> {slug}
+            </p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Tentar novamente
+          </button>
         </div>
       </div>
     );
