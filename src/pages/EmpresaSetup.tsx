@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { gerarSlug } from '@/utils/slugUtils';
 import Logo from '@/components/Logo';
 
 const EmpresaSetup = () => {
@@ -57,25 +56,23 @@ const EmpresaSetup = () => {
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const nome_negocio = formData.get('nome_negocio') as string;
-    
-    // Gerar slug automaticamente a partir do nome do negócio
-    const slug = gerarSlug(nome_negocio);
     
     const empresaData = {
       owner_id: user.id,
-      nome_negocio,
+      nome_negocio: formData.get('nome_negocio') as string,
       tipo: formData.get('tipo') as string,
       telefone: formData.get('telefone') as string || null,
       endereco: formData.get('endereco') as string || null,
-      slug, // Slug gerado automaticamente
+      // slug será gerado automaticamente pelo trigger do banco
     };
 
     console.log('Dados da empresa a serem inseridos:', empresaData);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('empresas')
-      .insert([empresaData]);
+      .insert([empresaData])
+      .select()
+      .single();
 
     if (error) {
       console.error('Erro ao cadastrar empresa:', error);
@@ -87,7 +84,7 @@ const EmpresaSetup = () => {
     } else {
       toast({
         title: "Empresa cadastrada com sucesso!",
-        description: `Sua URL pública é: /agendamento/${slug}`,
+        description: `Sua URL pública é: /agendamento/${data.slug}`,
       });
       navigate('/dashboard');
     }

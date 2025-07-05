@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Upload, X, Image } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEmpresa } from '@/hooks/useEmpresa';
 import { supabase } from '@/integrations/supabase/client';
-import { gerarSlug } from '@/utils/slugUtils';
 
 const CompanyTab = () => {
   const { toast } = useToast();
@@ -123,16 +123,14 @@ const CompanyTab = () => {
     if (!empresa) return;
 
     try {
-      // Gerar novo slug se o nome mudou
-      const novoSlug = gerarSlug(formData.name);
-      
+      // Não atualizar o slug - ele permanece fixo após a criação
       const { error } = await supabase
         .from('empresas')
         .update({
           nome_negocio: formData.name,
           endereco: formData.address,
           telefone: formData.phone,
-          slug: novoSlug, // Atualizar slug automaticamente
+          // slug não é atualizado - permanece fixo
         })
         .eq('id', empresa.id);
 
@@ -147,7 +145,7 @@ const CompanyTab = () => {
 
       toast({
         title: "Alterações salvas",
-        description: "As informações da empresa foram salvas com sucesso! O link de agendamento foi atualizado."
+        description: "As informações da empresa foram salvas com sucesso! O link de agendamento permanece o mesmo."
       });
     } catch (error) {
       console.error('Erro ao salvar empresa:', error);
@@ -248,6 +246,9 @@ const CompanyTab = () => {
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Alterar o nome não afetará o link de agendamento, que permanece fixo.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Endereço</label>
@@ -377,7 +378,7 @@ const CompanyTab = () => {
           </CardHeader>
           <CardContent>
             <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-100">
-              <p className="text-sm text-gray-600 mb-2">Seu link personalizado:</p>
+              <p className="text-sm text-gray-600 mb-2">Seu link personalizado fixo:</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-white p-2 rounded border text-sm text-blue-600 break-all">
                   {bookingLink}
@@ -394,7 +395,7 @@ const CompanyTab = () => {
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Compartilhe este link com seus clientes para que eles possam agendar diretamente. 
-              O link é automaticamente atualizado quando você muda o nome da empresa.
+              <strong> Este link é fixo e não muda mesmo que você altere o nome da empresa.</strong>
             </p>
             <div className="space-y-2">
               <Button 
