@@ -1,8 +1,6 @@
+
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Marcas from "@/components/Marcas";
-import Sobre from "@/components/Sobre";
-import Diferenciais from "@/components/Diferenciais";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
@@ -14,9 +12,6 @@ const Index = () => {
     <div className="min-h-screen">
       <Header />
       <Hero />
-      <Marcas />
-      <Sobre />
-      <Diferenciais />
 
       {/* Componente de debug temporário - remover após testes */}
       <div className="py-8 bg-gray-50">
