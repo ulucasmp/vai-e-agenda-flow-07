@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { empresaSetupSchema } from '@/utils/validation';
+import { sanitizeInput, sanitizeName } from '@/utils/validation';
 import Logo from '@/components/Logo';
 
 const EmpresaSetup = () => {
@@ -18,6 +20,12 @@ const EmpresaSetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasEmpresa, setHasEmpresa] = useState(false);
   const [checkingEmpresa, setCheckingEmpresa] = useState(true);
+  const [errors, setErrors] = useState<{
+    nome_negocio?: string;
+    tipo?: string;
+    telefone?: string;
+    endereco?: string;
+  }>({});
 
   // Redirect if not authenticated
   if (!user && !loading) {
@@ -49,6 +57,31 @@ const EmpresaSetup = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
+  const validateForm = (formData: FormData) => {
+    const data = {
+      nome_negocio: formData.get('nome_negocio') as string,
+      tipo: formData.get('tipo') as string,
+      telefone: formData.get('telefone') as string || '',
+      endereco: formData.get('endereco') as string || ''
+    };
+
+    try {
+      empresaSetupSchema.parse(data);
+      setErrors({});
+      return { isValid: true, data };
+    } catch (error: any) {
+      const newErrors: typeof errors = {};
+      
+      error.errors.forEach((err: any) => {
+        const field = err.path[0];
+        newErrors[field as keyof typeof errors] = err.message;
+      });
+      
+      setErrors(newErrors);
+      return { isValid: false, data };
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
@@ -57,12 +90,32 @@ const EmpresaSetup = () => {
 
     const formData = new FormData(e.currentTarget);
     
+    // Sanitize inputs
+    const nome_negocio = sanitizeName(formData.get('nome_negocio') as string);
+    const tipo = sanitizeInput(formData.get('tipo') as string);
+    const telefone = sanitizeInput(formData.get('telefone') as string);
+    const endereco = sanitizeInput(formData.get('endereco') as string);
+
+    // Create new FormData with sanitized values
+    const sanitizedFormData = new FormData();
+    sanitizedFormData.set('nome_negocio', nome_negocio);
+    sanitizedFormData.set('tipo', tipo);
+    sanitizedFormData.set('telefone', telefone);
+    sanitizedFormData.set('endereco', endereco);
+
+    const validation = validateForm(sanitizedFormData);
+    
+    if (!validation.isValid) {
+      setIsLoading(false);
+      return;
+    }
+
     const empresaData = {
       owner_id: user.id,
-      nome_negocio: formData.get('nome_negocio') as string,
-      tipo: formData.get('tipo') as string,
-      telefone: formData.get('telefone') as string || null,
-      endereco: formData.get('endereco') as string || null,
+      nome_negocio: validation.data.nome_negocio,
+      tipo: validation.data.tipo,
+      telefone: validation.data.telefone || null,
+      endereco: validation.data.endereco || null,
       // slug será gerado automaticamente pelo trigger do banco
     };
 
@@ -131,7 +184,12 @@ const EmpresaSetup = () => {
                   required
                   placeholder="Ex: Salão Beleza Total"
                   disabled={isLoading}
+                  maxLength={150}
+                  className={errors.nome_negocio ? 'border-red-500' : ''}
                 />
+                {errors.nome_negocio && (
+                  <p className="text-red-500 text-sm mt-1">{errors.nome_negocio}</p>
+                )}
                 <p className="text-xs text-gray-500 mt-1">
                   Será usado para gerar sua URL pública automaticamente
                 </p>
@@ -140,7 +198,7 @@ const EmpresaSetup = () => {
               <div>
                 <Label htmlFor="tipo">Tipo de Negócio *</Label>
                 <Select name="tipo" required disabled={isLoading}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.tipo ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -152,6 +210,9 @@ const EmpresaSetup = () => {
                     <SelectItem value="outros">Outros</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.tipo && (
+                  <p className="text-red-500 text-sm mt-1">{errors.tipo}</p>
+                )}
               </div>
 
               <div>
@@ -162,7 +223,12 @@ const EmpresaSetup = () => {
                   type="tel"
                   placeholder="(11) 99999-9999"
                   disabled={isLoading}
+                  maxLength={20}
+                  className={errors.telefone ? 'border-red-500' : ''}
                 />
+                {errors.telefone && (
+                  <p className="text-red-500 text-sm mt-1">{errors.telefone}</p>
+                )}
               </div>
 
               <div>
@@ -173,7 +239,12 @@ const EmpresaSetup = () => {
                   type="text"
                   placeholder="Rua, número, bairro, cidade"
                   disabled={isLoading}
+                  maxLength={255}
+                  className={errors.endereco ? 'border-red-500' : ''}
                 />
+                {errors.endereco && (
+                  <p className="text-red-500 text-sm mt-1">{errors.endereco}</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

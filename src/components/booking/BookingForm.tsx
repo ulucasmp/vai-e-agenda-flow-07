@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, Phone, CheckCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { Calendar, CheckCircle } from 'lucide-react';
 import ServiceSelector from './ServiceSelector';
 import ProfessionalSelector from './ProfessionalSelector';
 import DateTimeSelector from './DateTimeSelector';
-import ClientInfoForm from './ClientInfoForm';
+import SecureClientInfoForm from './SecureClientInfoForm';
+import { useSecureBooking } from '@/hooks/useSecureBooking';
+import { nameSchema, phoneSchema, emailSchema } from '@/utils/validation';
 
 interface Professional {
   id: string;
@@ -40,7 +40,7 @@ interface BookingFormProps {
 }
 
 const BookingForm = ({ empresa, services, professionals, availableTimes }: BookingFormProps) => {
-  const { toast } = useToast();
+  const { createBooking, isLoading } = useSecureBooking();
   const [selectedService, setSelectedService] = useState('');
   const [selectedProfessional, setSelectedProfessional] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -48,49 +48,63 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    phone?: string;
+    email?: string;
+  }>({});
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+
+    try {
+      nameSchema.parse(clientName);
+    } catch (error: any) {
+      newErrors.name = error.errors[0]?.message || 'Nome inválido';
+    }
+
+    try {
+      phoneSchema.parse(clientPhone);
+    } catch (error: any) {
+      newErrors.phone = error.errors[0]?.message || 'Telefone inválido';
+    }
+
+    if (clientEmail) {
+      try {
+        emailSchema.parse(clientEmail);
+      } catch (error: any) {
+        newErrors.email = error.errors[0]?.message || 'Email inválido';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedService || !selectedProfessional || !selectedDate || !selectedTime || !clientName || !clientPhone) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
       return;
     }
 
-    setIsLoading(true);
+    if (!validateForm()) {
+      return;
+    }
 
-    try {
-      const agendamentoData = {
-        empresa_id: empresa.id,
-        profissional_id: selectedProfessional,
-        servico_id: selectedService,
-        cliente_nome: clientName,
-        cliente_telefone: clientPhone,
-        cliente_email: clientEmail || null,
-        data_agendamento: selectedDate.toISOString().split('T')[0],
-        horario: selectedTime,
-        status: 'confirmado'
-      };
+    const success = await createBooking({
+      clientName,
+      clientPhone,
+      clientEmail,
+      selectedService,
+      selectedProfessional,
+      selectedDate,
+      selectedTime,
+      empresaId: empresa.id
+    });
 
-      const { error } = await supabase
-        .from('agendamentos')
-        .insert([agendamentoData]);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Agendamento confirmado!",
-        description: `Seu agendamento foi marcado para ${selectedDate.toLocaleDateString('pt-BR')} às ${selectedTime}.`,
-      });
-
-      // Limpar formulário
+    if (success.success) {
+      // Clear form on success
       setSelectedService('');
       setSelectedProfessional('');
       setSelectedDate(undefined);
@@ -98,16 +112,7 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
       setClientName('');
       setClientPhone('');
       setClientEmail('');
-
-    } catch (error) {
-      console.error('Erro ao criar agendamento:', error);
-      toast({
-        title: "Erro ao agendar",
-        description: "Ocorreu um erro ao confirmar seu agendamento. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      setErrors({});
     }
   };
 
@@ -161,28 +166,17 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
           {selectedService && selectedProfessional && selectedDate && selectedTime && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                <User className="w-5 h-5 inline mr-2" />
                 Suas Informações
               </h3>
-              <ClientInfoForm
+              <SecureClientInfoForm
                 clientName={clientName}
                 clientPhone={clientPhone}
+                clientEmail={clientEmail}
                 onNameChange={setClientName}
                 onPhoneChange={setClientPhone}
+                onEmailChange={setClientEmail}
+                errors={errors}
               />
-              
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  E-mail (opcional)
-                </label>
-                <input
-                  type="email"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  placeholder="seu@email.com"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                />
-              </div>
             </div>
           )}
 
