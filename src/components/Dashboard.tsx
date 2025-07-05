@@ -61,40 +61,42 @@ const Dashboard = () => {
         <StatsCards todayStats={todayStats} />
 
         <Tabs defaultValue="overview" className="space-y-6">
-          {/* Mobile-optimized TabsList with horizontal scroll */}
-          <div className="w-full overflow-x-auto pb-2">
-            <TabsList className="flex w-max min-w-full bg-white border border-blue-100 shadow-sm rounded-lg p-1 gap-1">
-              <TabsTrigger 
-                value="overview" 
-                className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-3 px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[80px]"
-              >
-                Visão Geral
-              </TabsTrigger>
-              <TabsTrigger 
-                value="calendar" 
-                className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-3 px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[80px]"
-              >
-                Calendário
-              </TabsTrigger>
-              <TabsTrigger 
-                value="company" 
-                className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-3 px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[70px]"
-              >
-                Empresa
-              </TabsTrigger>
-              <TabsTrigger 
-                value="services" 
-                className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-3 px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[70px]"
-              >
-                Serviços
-              </TabsTrigger>
-              <TabsTrigger 
-                value="professionals" 
-                className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 text-xs sm:text-sm py-3 px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[90px]"
-              >
-                Profissionais
-              </TabsTrigger>
-            </TabsList>
+          {/* Mobile-first responsive TabsList */}
+          <div className="w-full">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="inline-flex h-12 bg-white border border-blue-100 shadow-sm rounded-lg p-1 gap-1 w-max min-w-full">
+                <TabsTrigger 
+                  value="overview" 
+                  className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-gray-600 text-sm py-2.5 px-3 sm:px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[90px] hover:bg-blue-50"
+                >
+                  Visão Geral
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="calendar" 
+                  className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-gray-600 text-sm py-2.5 px-3 sm:px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[85px] hover:bg-blue-50"
+                >
+                  Calendário
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="company" 
+                  className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-gray-600 text-sm py-2.5 px-3 sm:px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[75px] hover:bg-blue-50"
+                >
+                  Empresa
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="services" 
+                  className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-gray-600 text-sm py-2.5 px-3 sm:px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[75px] hover:bg-blue-50"
+                >
+                  Serviços
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="professionals" 
+                  className="flex-shrink-0 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-sm text-gray-600 text-sm py-2.5 px-3 sm:px-4 rounded-md font-medium transition-all whitespace-nowrap min-w-[100px] hover:bg-blue-50"
+                >
+                  Profissionais
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           <OverviewTab 
