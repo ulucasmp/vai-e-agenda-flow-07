@@ -12,28 +12,44 @@ import ServicesTab from '@/components/dashboard/ServicesTab';
 import CalendarTab from '@/components/dashboard/CalendarTab';
 
 const Dashboard = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const { empresa, profissionais, loading: empresaLoading } = useEmpresa();
 
-  // Redirect if not authenticated
-  if (!user && !authLoading) {
-    return <Navigate to="/auth" replace />;
-  }
+  console.log('Dashboard - authLoading:', authLoading, 'user:', user?.email, 'empresaLoading:', empresaLoading, 'empresa:', empresa?.nome_negocio);
 
-  // Redirect to setup if no company
-  if (!empresa && !empresaLoading && !authLoading) {
-    return <Navigate to="/empresa-setup" replace />;
-  }
-
-  if (authLoading || empresaLoading) {
+  // Show loading while checking auth state
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div>Carregando...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div>Carregando...</div>
+        </div>
       </div>
     );
   }
 
+  // Redirect if not authenticated
+  if (!user || !session) {
+    console.log('Dashboard - Redirecting to /auth - no user or session');
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Show loading while checking empresa
+  if (empresaLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div>Carregando dados da empresa...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to setup if no company
   if (!empresa) {
+    console.log('Dashboard - Redirecting to /empresa-setup - no empresa');
     return <Navigate to="/empresa-setup" replace />;
   }
 
