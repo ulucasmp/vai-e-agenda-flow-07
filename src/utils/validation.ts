@@ -1,8 +1,8 @@
 
 import { z } from 'zod';
 
-// Phone number validation (Brazilian format)
-const phoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+// Phone number validation (Brazilian format) - now accepts numbers only
+const phoneRegex = /^(\(\d{2}\)\s\d{4,5}-\d{4}|\d{10,11})$/;
 
 // Name validation (letters, spaces, hyphens, apostrophes only)
 const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
@@ -13,10 +13,10 @@ export const emailSchema = z.string()
   .email('Email inválido')
   .max(255, 'Email muito longo');
 
-// Phone validation schema
+// Phone validation schema - now accepts both formats
 export const phoneSchema = z.string()
   .min(1, 'Telefone é obrigatório')
-  .regex(phoneRegex, 'Formato inválido. Use: (11) 99999-9999')
+  .regex(phoneRegex, 'Formato inválido. Use: (11) 99999-9999 ou 11999999999')
   .max(20, 'Telefone muito longo');
 
 // Name validation schema
