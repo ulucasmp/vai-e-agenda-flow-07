@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 const FinalCTA = () => {
   const benefits = [
-    'Sem cartão de crédito',
     '7 dias grátis',
     'Cancele quando quiser'
   ];
