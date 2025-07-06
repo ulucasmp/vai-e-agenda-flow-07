@@ -24,8 +24,8 @@ const Logo = ({ size = 'md', variant = 'full', className = '' }: LogoProps) => {
     <div className={`flex flex-col items-center ${className}`}>
       {/* Logo Icon */}
       <div className={`${sizeClasses[size]} relative flex items-center justify-center mb-1 mx-auto`}>
-        {/* Background gradient rounded square */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl shadow-lg"></div>
+        {/* Background gradient rounded square - using rounded-lg for consistency */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-lg"></div>
         
         {/* VA text */}
         <div className="relative z-10 flex items-center justify-center w-full h-full">
