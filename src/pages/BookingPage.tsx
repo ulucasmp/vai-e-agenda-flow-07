@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import BookingHeader from '@/components/booking/BookingHeader';
@@ -36,13 +36,13 @@ const BookingPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const fetchCompanyData = async () => {
       if (!slug) {
         console.error('BookingPage: Slug não fornecido');
-        setError('Slug da empresa não encontrado na URL');
+        setNotFound(true);
         setLoading(false);
         return;
       }
@@ -55,39 +55,25 @@ const BookingPage = () => {
           .from('empresas')
           .select('id, nome_negocio, tipo, telefone, endereco, slug')
           .eq('slug', slug)
-          .single();
+          .maybeSingle();
 
         console.log('BookingPage: Resultado da busca da empresa:', { empresaData, empresaError });
 
         if (empresaError) {
           console.error('BookingPage: Erro ao buscar empresa:', empresaError);
-          if (empresaError.code === 'PGRST116') {
-            setError('Empresa não encontrada');
-            toast({
-              title: "Empresa não encontrada",
-              description: "Esta página de agendamento não existe ou foi desativada.",
-              variant: "destructive",
-            });
-          } else {
-            setError('Erro ao carregar dados da empresa');
-            toast({
-              title: "Erro ao carregar dados",
-              description: "Ocorreu um erro ao carregar as informações da empresa.",
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Erro ao carregar dados",
+            description: "Ocorreu um erro ao carregar as informações da empresa.",
+            variant: "destructive",
+          });
+          setNotFound(true);
           setLoading(false);
           return;
         }
 
         if (!empresaData) {
-          console.error('BookingPage: Empresa não encontrada para o slug:', slug);
-          setError('Empresa não encontrada');
-          toast({
-            title: "Empresa não encontrada",
-            description: "Esta página de agendamento não existe.",
-            variant: "destructive",
-          });
+          console.log('BookingPage: Empresa não encontrada para o slug:', slug);
+          setNotFound(true);
           setLoading(false);
           return;
         }
@@ -101,8 +87,6 @@ const BookingPage = () => {
           .select('id, nome, especialidade')
           .eq('empresa_id', empresaData.id)
           .eq('ativo', true);
-
-        console.log('BookingPage: Profissionais encontrados:', { profissionaisData, profissionaisError });
 
         if (profissionaisData && !profissionaisError) {
           setProfessionals(profissionaisData.map(prof => ({
@@ -121,8 +105,6 @@ const BookingPage = () => {
           .eq('empresa_id', empresaData.id)
           .eq('ativo', true);
 
-        console.log('BookingPage: Serviços encontrados:', { servicosData, servicosError });
-
         if (servicosData && !servicosError) {
           setServices(servicosData.map(servico => ({
             id: servico.id,
@@ -136,12 +118,12 @@ const BookingPage = () => {
 
       } catch (error) {
         console.error('BookingPage: Erro geral ao carregar dados:', error);
-        setError('Erro inesperado ao carregar dados');
         toast({
           title: "Erro ao carregar dados",
           description: "Ocorreu um erro inesperado ao carregar as informações da empresa.",
           variant: "destructive",
         });
+        setNotFound(true);
       } finally {
         setLoading(false);
       }
@@ -150,7 +132,7 @@ const BookingPage = () => {
     fetchCompanyData();
   }, [slug, toast]);
 
-  // Horários disponíveis padrão (pode ser personalizado futuramente)
+  // Horários disponíveis padrão
   const availableTimes = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
@@ -168,28 +150,8 @@ const BookingPage = () => {
     );
   }
 
-  if (error || !empresa) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-8 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h1>
-          <p className="text-gray-600 mb-4">
-            {error || 'Esta página de agendamento não existe ou foi desativada.'}
-          </p>
-          <div className="bg-gray-100 p-3 rounded-lg mb-4">
-            <p className="text-sm text-gray-600">
-              <strong>Slug buscado:</strong> {slug}
-            </p>
-          </div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      </div>
-    );
+  if (notFound || !empresa) {
+    return <Navigate to="/404" replace />;
   }
 
   const companySettings = {

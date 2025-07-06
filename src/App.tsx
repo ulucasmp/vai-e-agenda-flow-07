@@ -58,7 +58,8 @@ const App = () => (
               <Route path="/privacidade" element={<PrivacyPolicy />} />
               <Route path="/termos" element={<TermsOfService />} />
               <Route path="/agendamento/:slug" element={<BookingPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/404" element={<NotFound />} />
+              {/* Catch-all route must be last */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
