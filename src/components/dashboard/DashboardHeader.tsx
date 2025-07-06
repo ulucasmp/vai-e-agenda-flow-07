@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Logo from '../Logo';
@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ companyName }: DashboardHeaderProps) => {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -41,8 +41,8 @@ const DashboardHeader = ({ companyName }: DashboardHeaderProps) => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center space-x-2">
-                <User className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700">{user?.email}</span>
+                <Building2 className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700">{companyName}</span>
               </div>
               <Button variant="outline" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
