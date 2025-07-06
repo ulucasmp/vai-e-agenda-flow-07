@@ -14,9 +14,10 @@ interface Appointment {
 
 interface WeeklySummaryProps {
   appointments: Appointment[];
+  onDaySelect?: (date: Date) => void;
 }
 
-const WeeklySummary = ({ appointments }: WeeklySummaryProps) => {
+const WeeklySummary = ({ appointments, onDaySelect }: WeeklySummaryProps) => {
   // Generate weekly data from appointments
   const generateWeeklyData = () => {
     const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -33,6 +34,7 @@ const WeeklySummary = ({ appointments }: WeeklySummaryProps) => {
 
       return {
         day,
+        date: dayDate,
         agendamentos: dayAppointments.length,
         receita: dayAppointments.length * 50, // Valor médio estimado
         disponivel: Math.max(0, 8 - dayAppointments.length)
@@ -52,7 +54,10 @@ const WeeklySummary = ({ appointments }: WeeklySummaryProps) => {
   };
 
   const handleDayClick = (dayIndex: number) => {
-    console.log(`Clicando no dia ${dayIndex}`);
+    const dayData = weeklyData[dayIndex];
+    if (onDaySelect && dayData) {
+      onDaySelect(dayData.date);
+    }
   };
 
   return (

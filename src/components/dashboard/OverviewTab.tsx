@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import WeeklySummary from './WeeklySummary';
 import BookingLinkCard from './BookingLinkCard';
 import AppointmentsList from './AppointmentsList';
+import DayAppointmentsModal from './DayAppointmentsModal';
 
 interface Professional {
   id: string;
@@ -46,6 +47,9 @@ interface OverviewTabProps {
 }
 
 const OverviewTab = ({ companyData, professionals, services, appointments }: OverviewTabProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const activeProfessionals = professionals.filter(p => p.active);
   const activeServices = services.filter(s => s.active);
   const todayAppointments = appointments.filter(apt => {
@@ -71,8 +75,23 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
            apt.status === 'pending' ? 'pendente' as const : 'cancelado' as const
   }));
 
+  const handleDaySelect = (date: Date) => {
+    setSelectedDate(date);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedDate(null);
+  };
+
   return (
     <TabsContent value="overview" className="space-y-6">
+      {/* Mobile: BookingLinkCard primeiro */}
+      <div className="block lg:hidden">
+        <BookingLinkCard companyName={companyData.name} />
+      </div>
+
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Stats cards moved here for better layout */}
@@ -125,11 +144,14 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
           {/* Próximos Agendamentos antes do Resumo da Semana */}
           <AppointmentsList appointments={appointmentsForList} />
           
-          <WeeklySummary appointments={appointments} />
+          <WeeklySummary appointments={appointments} onDaySelect={handleDaySelect} />
         </div>
         
         <div className="space-y-6">
-          <BookingLinkCard companyName={companyData.name} />
+          {/* Desktop: BookingLinkCard na sidebar */}
+          <div className="hidden lg:block">
+            <BookingLinkCard companyName={companyData.name} />
+          </div>
           
           {/* Company Quick Info */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-blue-100">
@@ -178,6 +200,14 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
           </div>
         </div>
       </div>
+
+      {/* Modal para mostrar agendamentos do dia */}
+      <DayAppointmentsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        selectedDate={selectedDate}
+        appointments={appointments}
+      />
     </TabsContent>
   );
 };
