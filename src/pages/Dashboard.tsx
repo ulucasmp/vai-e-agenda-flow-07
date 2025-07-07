@@ -86,8 +86,8 @@ const Dashboard = () => {
           
           <CompanyTab />
           
-          <ProfessionalsTab professionals={profissionais.map((prof, index) => ({
-            id: index + 1,
+          <ProfessionalsTab professionals={profissionais.map(prof => ({
+            id: prof.id,
             name: prof.nome,
             specialty: prof.especialidade,
             phone: '',

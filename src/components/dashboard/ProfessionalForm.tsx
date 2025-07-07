@@ -14,7 +14,7 @@ interface WorkingHours {
 }
 
 interface Professional {
-  id: number;
+  id: string;
   name: string;
   specialty: string;
   phone: string;
@@ -25,7 +25,7 @@ interface Professional {
 
 interface ProfessionalFormProps {
   professional?: Professional;
-  onSave: (professional: Omit<Professional, 'id'> & { id?: number }) => void;
+  onSave: (professional: Omit<Professional, 'id'> & { id?: string }) => void;
   onCancel: () => void;
 }
 

@@ -14,7 +14,7 @@ interface Professional {
 }
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   price: number;
   duration: number;
@@ -23,7 +23,7 @@ interface Service {
 
 // Standardized Appointment interface
 interface Appointment {
-  id: number;
+  id: string;
   clientName: string;
   service: string;
   professional: string;

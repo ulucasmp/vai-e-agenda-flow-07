@@ -27,21 +27,21 @@ const Dashboard = () => {
   };
 
   const appointments = [
-    { id: 1, clientName: 'Maria Silva', service: 'Corte + Escova', professional: 'Ana Costa', date: new Date().toISOString(), time: '14:00', status: 'confirmed' as const },
-    { id: 2, clientName: 'João Santos', service: 'Corte + Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '15:30', status: 'confirmed' as const },
-    { id: 3, clientName: 'Pedro Oliveira', service: 'Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '16:00', status: 'pending' as const },
+    { id: '1', clientName: 'Maria Silva', service: 'Corte + Escova', professional: 'Ana Costa', date: new Date().toISOString(), time: '14:00', status: 'confirmed' as const },
+    { id: '2', clientName: 'João Santos', service: 'Corte + Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '15:30', status: 'confirmed' as const },
+    { id: '3', clientName: 'Pedro Oliveira', service: 'Barba', professional: 'Carlos Lima', date: new Date().toISOString(), time: '16:00', status: 'pending' as const },
   ];
 
   const services = [
-    { id: 1, name: 'Corte Masculino', price: 35, duration: 30, active: true },
-    { id: 2, name: 'Corte + Barba', price: 50, duration: 45, active: true },
-    { id: 3, name: 'Escova Progressiva', price: 120, duration: 180, active: true },
-    { id: 4, name: 'Coloração', price: 80, duration: 120, active: false },
+    { id: '1', name: 'Corte Masculino', price: 35, duration: 30, active: true },
+    { id: '2', name: 'Corte + Barba', price: 50, duration: 45, active: true },
+    { id: '3', name: 'Escova Progressiva', price: 120, duration: 180, active: true },
+    { id: '4', name: 'Coloração', price: 80, duration: 120, active: false },
   ];
 
   const professionals = [
-    { id: 1, name: 'Ana Costa', specialty: 'Cabeleireira', phone: '(11) 99999-9999', email: 'ana@exemplo.com', active: true },
-    { id: 2, name: 'Carlos Lima', specialty: 'Barbeiro', phone: '(11) 88888-8888', email: 'carlos@exemplo.com', active: true },
+    { id: '1', name: 'Ana Costa', specialty: 'Cabeleireira', phone: '(11) 99999-9999', email: 'ana@exemplo.com', active: true },
+    { id: '2', name: 'Carlos Lima', specialty: 'Barbeiro', phone: '(11) 88888-8888', email: 'carlos@exemplo.com', active: true },
   ];
 
   const companyData = {
@@ -102,7 +102,7 @@ const Dashboard = () => {
           <OverviewTab 
             companyData={companyData}
             professionals={professionals.map(prof => ({
-              id: prof.id.toString(),
+              id: prof.id,
               name: prof.name,
               specialty: prof.specialty,
               active: prof.active

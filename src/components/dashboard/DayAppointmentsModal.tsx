@@ -7,7 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import { Clock, User, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface Appointment {
-  id: number;
+  id: string;
   clientName: string;
   service: string;
   professional: string;

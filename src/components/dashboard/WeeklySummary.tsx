@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Appointment {
-  id: number;
+  id: string;
   clientName: string;
   service: string;
   professional: string;

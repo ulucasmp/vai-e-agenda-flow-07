@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X } from 'lucide-react';
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   price: number;
   duration: number;
@@ -16,7 +16,7 @@ interface Service {
 
 interface ServiceFormProps {
   service?: Service;
-  onSave: (service: Omit<Service, 'id'> & { id?: number }) => void;
+  onSave: (service: Omit<Service, 'id'> & { id?: string }) => void;
   onCancel: () => void;
 }
 

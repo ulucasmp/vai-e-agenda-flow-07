@@ -15,7 +15,7 @@ interface WorkingHours {
 }
 
 interface Professional {
-  id: number;
+  id: string;
   name: string;
   specialty: string;
   phone: string;
@@ -51,7 +51,7 @@ const ProfessionalsTab = ({ professionals }: ProfessionalsTabProps) => {
     setShowForm(true);
   };
 
-  const handleSaveProfessional = (professionalData: Omit<Professional, 'id'> & { id?: number }) => {
+  const handleSaveProfessional = (professionalData: Omit<Professional, 'id'> & { id?: string }) => {
     if (professionalData.id) {
       // Editando profissional existente
       setProfessionalsList(prev => prev.map(professional => 
@@ -67,7 +67,7 @@ const ProfessionalsTab = ({ professionals }: ProfessionalsTabProps) => {
       // Adicionando novo profissional
       const newProfessional = {
         ...professionalData,
-        id: Math.max(...professionalsList.map(p => p.id), 0) + 1
+        id: `prof_${Date.now()}`
       };
       setProfessionalsList(prev => [...prev, newProfessional]);
       toast({
