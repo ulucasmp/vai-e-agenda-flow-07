@@ -7,10 +7,12 @@ import { TabsContent } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useServicos } from '@/hooks/useServicos';
+import { useEmpresa } from '@/hooks/useEmpresa';
 import ServiceForm from './ServiceForm';
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   price: number;
   duration: number;
@@ -18,57 +20,94 @@ interface Service {
 }
 
 interface ServicesTabProps {
-  services: Service[];
+  services?: Service[];
 }
 
-const ServicesTab = ({ services }: ServicesTabProps) => {
+const ServicesTab = ({ services = [] }: ServicesTabProps) => {
   const { toast } = useToast();
-  const [servicesList, setServicesList] = useState(services);
+  const { empresa } = useEmpresa();
+  const { servicos, addServico, updateServico, deleteServico } = useServicos(empresa?.id);
   const [showForm, setShowForm] = useState(false);
-  const [editingService, setEditingService] = useState<Service | undefined>();
+  const [editingService, setEditingService] = useState<any>(undefined);
 
   const handleAddService = () => {
     setEditingService(undefined);
     setShowForm(true);
   };
 
-  const handleEditService = (service: Service) => {
-    setEditingService(service);
+  const handleEditService = (servico: any) => {
+    setEditingService({
+      id: servico.id,
+      name: servico.nome,
+      price: servico.preco,
+      duration: servico.duracao_em_minutos,
+      active: servico.ativo
+    });
     setShowForm(true);
   };
 
-  const handleDeleteService = (serviceId: number) => {
-    setServicesList(prev => prev.filter(service => service.id !== serviceId));
-    toast({
-      title: "Serviço excluído",
-      description: "O serviço foi removido com sucesso.",
-    });
-  };
-
-  const handleSaveService = (serviceData: Omit<Service, 'id'> & { id?: number }) => {
-    if (serviceData.id) {
-      // Editando serviço existente
-      setServicesList(prev => prev.map(service => 
-        service.id === serviceData.id 
-          ? { ...serviceData, id: serviceData.id }
-          : service
-      ));
+  const handleDeleteService = async (serviceId: string) => {
+    const { error } = await deleteServico(serviceId);
+    
+    if (error) {
       toast({
-        title: "Serviço atualizado",
-        description: "As alterações foram salvas com sucesso.",
+        title: "Erro ao excluir serviço",
+        description: error.message,
+        variant: "destructive",
       });
     } else {
-      // Adicionando novo serviço
-      const newService = {
-        ...serviceData,
-        id: Math.max(...servicesList.map(s => s.id), 0) + 1
-      };
-      setServicesList(prev => [...prev, newService]);
       toast({
-        title: "Serviço adicionado",
-        description: "O novo serviço foi criado com sucesso.",
+        title: "Serviço excluído",
+        description: "O serviço foi removido com sucesso.",
       });
     }
+  };
+
+  const handleSaveService = async (serviceData: any) => {
+    if (!empresa?.id) return;
+
+    const servicoData = {
+      empresa_id: empresa.id,
+      nome: serviceData.name,
+      preco: serviceData.price,
+      duracao_em_minutos: serviceData.duration,
+      ativo: serviceData.active
+    };
+
+    if (serviceData.id) {
+      // Editando serviço existente
+      const { error } = await updateServico(serviceData.id, servicoData);
+      
+      if (error) {
+        toast({
+          title: "Erro ao atualizar serviço",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Serviço atualizado",
+          description: "As alterações foram salvas com sucesso.",
+        });
+      }
+    } else {
+      // Adicionando novo serviço
+      const { error } = await addServico(servicoData);
+      
+      if (error) {
+        toast({
+          title: "Erro ao adicionar serviço",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Serviço adicionado",
+          description: "O novo serviço foi criado com sucesso.",
+        });
+      }
+    }
+    
     setShowForm(false);
     setEditingService(undefined);
   };
@@ -104,18 +143,18 @@ const ServicesTab = ({ services }: ServicesTabProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {servicesList.map((service) => (
-                <TableRow key={service.id}>
-                  <TableCell className="font-medium">{service.name}</TableCell>
-                  <TableCell>R$ {service.price.toFixed(2)}</TableCell>
-                  <TableCell>{service.duration} min</TableCell>
+              {servicos.map((servico) => (
+                <TableRow key={servico.id}>
+                  <TableCell className="font-medium">{servico.nome}</TableCell>
+                  <TableCell>R$ {Number(servico.preco).toFixed(2)}</TableCell>
+                  <TableCell>{servico.duracao_em_minutos} min</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      service.active 
+                      servico.ativo 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {service.active ? 'Ativo' : 'Inativo'}
+                      {servico.ativo ? 'Ativo' : 'Inativo'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -124,7 +163,7 @@ const ServicesTab = ({ services }: ServicesTabProps) => {
                         variant="outline" 
                         size="sm" 
                         className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleEditService(service)}
+                        onClick={() => handleEditService(servico)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -142,14 +181,14 @@ const ServicesTab = ({ services }: ServicesTabProps) => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Excluir Serviço</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tem certeza que deseja excluir o serviço "{service.name}"? 
+                              Tem certeza que deseja excluir o serviço "{servico.nome}"? 
                               Esta ação não pode ser desfeita.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction 
-                              onClick={() => handleDeleteService(service.id)}
+                              onClick={() => handleDeleteService(servico.id)}
                               className="bg-red-600 hover:bg-red-700"
                             >
                               Excluir

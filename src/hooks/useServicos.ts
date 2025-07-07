@@ -19,19 +19,28 @@ export const useServicos = (empresaId?: string) => {
   const [loading, setLoading] = useState(true);
 
   const fetchServicos = async () => {
-    if (!empresaId) return;
-
-    const { data, error } = await supabase
-      .from('servicos')
-      .select('*')
-      .eq('empresa_id', empresaId)
-      .eq('ativo', true)
-      .order('created_at', { ascending: true });
-
-    if (data && !error) {
-      setServicos(data);
+    if (!empresaId) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const { data, error } = await supabase
+        .from('servicos')
+        .select('*')
+        .eq('empresa_id', empresaId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao buscar serviços:', error);
+      } else {
+        setServicos(data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar serviços:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addServico = async (servicoData: Omit<Servico, 'id' | 'created_at'>) => {

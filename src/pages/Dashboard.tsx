@@ -80,14 +80,14 @@ const Dashboard = () => {
               specialty: prof.especialidade,
               active: prof.ativo
             }))}
-            services={[]} // Iniciar vazio - será implementado depois
-            appointments={[]} // Iniciar vazio - será implementado depois
+            services={[]}
+            appointments={[]}
           />
           
           <CompanyTab />
           
-          <ProfessionalsTab professionals={profissionais.map(prof => ({
-            id: parseInt(prof.id.replace(/-/g, '').substring(0, 8), 16),
+          <ProfessionalsTab professionals={profissionais.map((prof, index) => ({
+            id: index + 1,
             name: prof.nome,
             specialty: prof.especialidade,
             phone: '',
@@ -95,7 +95,7 @@ const Dashboard = () => {
             active: prof.ativo
           }))} />
           
-          <ServicesTab services={[]} />
+          <ServicesTab />
           
           <CalendarTab />
         </Tabs>
