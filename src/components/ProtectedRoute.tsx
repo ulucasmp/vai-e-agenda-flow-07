@@ -11,6 +11,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   console.log('ProtectedRoute - loading:', loading, 'user:', user?.email, 'session:', !!session);
 
+  // Always show loading while checking auth state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -22,8 +23,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Check both user and session for better reliability
-  if (!user || !session) {
+  // Only redirect if we're sure there's no authentication
+  if (!loading && (!user || !session)) {
     console.log('ProtectedRoute - Redirecting to /auth - no user or session');
     return <Navigate to="/auth" replace />;
   }
