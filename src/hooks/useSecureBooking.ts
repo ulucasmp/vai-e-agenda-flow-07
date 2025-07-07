@@ -9,7 +9,7 @@ interface BookingData {
   clientPhone: string;
   clientEmail: string;
   selectedService: string;
-  selectedProfessional: string;
+  selectedProfessional: string | null;
   selectedDate: Date;
   selectedTime: string;
   empresaId: string;
@@ -73,14 +73,20 @@ export const useSecureBooking = () => {
       }
 
       // Check for existing booking conflicts
-      const { data: existingBookings, error: conflictError } = await supabase
+      let conflictQuery = supabase
         .from('agendamentos')
         .select('id')
         .eq('empresa_id', bookingData.empresaId)
-        .eq('profissional_id', validatedData.selectedProfessional)
         .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
         .eq('horario', validatedData.selectedTime)
         .eq('status', 'confirmado');
+
+      // Only check professional conflict if a professional was selected
+      if (validatedData.selectedProfessional) {
+        conflictQuery = conflictQuery.eq('profissional_id', validatedData.selectedProfessional);
+      }
+
+      const { data: existingBookings, error: conflictError } = await conflictQuery;
 
       if (conflictError) {
         throw new Error('Erro ao verificar conflitos de agendamento');
@@ -98,7 +104,7 @@ export const useSecureBooking = () => {
       // Create the booking
       const agendamentoData = {
         empresa_id: bookingData.empresaId,
-        profissional_id: validatedData.selectedProfessional,
+        profissional_id: validatedData.selectedProfessional || null,
         servico_id: validatedData.selectedService,
         cliente_nome: validatedData.clientName,
         cliente_telefone: validatedData.clientPhone,

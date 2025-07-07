@@ -84,7 +84,8 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedService || !selectedProfessional || !selectedDate || !selectedTime || !clientName || !clientPhone) {
+    const needsProfessional = professionals.length > 0;
+    if (!selectedService || (needsProfessional && !selectedProfessional) || !selectedDate || !selectedTime || !clientName || !clientPhone) {
       return;
     }
 
@@ -97,7 +98,7 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
       clientPhone,
       clientEmail,
       selectedService,
-      selectedProfessional,
+      selectedProfessional: professionals.length > 0 ? selectedProfessional : null,
       selectedDate,
       selectedTime,
       empresaId: empresa.id
@@ -152,7 +153,7 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
           )}
 
           {/* Seletor de Data e Horário */}
-          {selectedService && selectedProfessional && (
+          {selectedService && (professionals.length === 0 || selectedProfessional) && (
             <DateTimeSelector
               selectedDate={selectedDate}
               selectedTime={selectedTime}
@@ -163,7 +164,7 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
           )}
 
           {/* Informações do Cliente */}
-          {selectedService && selectedProfessional && selectedDate && selectedTime && (
+          {selectedService && (professionals.length === 0 || selectedProfessional) && selectedDate && selectedTime && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Suas Informações
@@ -181,12 +182,14 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
           )}
 
           {/* Resumo do Agendamento */}
-          {selectedService && selectedProfessional && selectedDate && selectedTime && clientName && clientPhone && (
+          {selectedService && (professionals.length === 0 || selectedProfessional) && selectedDate && selectedTime && clientName && clientPhone && (
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-gray-900 mb-3">Resumo do Agendamento:</h4>
               <div className="space-y-2 text-sm">
                 <p><strong>Serviço:</strong> {selectedServiceData?.name} - R$ {selectedServiceData?.price}</p>
-                <p><strong>Profissional:</strong> {selectedProfessionalData?.name} ({selectedProfessionalData?.specialty})</p>
+                {selectedProfessionalData && (
+                  <p><strong>Profissional:</strong> {selectedProfessionalData.name} ({selectedProfessionalData.specialty})</p>
+                )}
                 <p><strong>Data:</strong> {selectedDate.toLocaleDateString('pt-BR')}</p>
                 <p><strong>Horário:</strong> {selectedTime}</p>
                 <p><strong>Duração:</strong> {selectedServiceData?.duration} minutos</p>
@@ -197,7 +200,7 @@ const BookingForm = ({ empresa, services, professionals, availableTimes }: Booki
           )}
 
           {/* Botão de Confirmar */}
-          {selectedService && selectedProfessional && selectedDate && selectedTime && clientName && clientPhone && (
+          {selectedService && (professionals.length === 0 || selectedProfessional) && selectedDate && selectedTime && clientName && clientPhone && (
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"

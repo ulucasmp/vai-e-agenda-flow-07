@@ -45,7 +45,7 @@ export const bookingSchema = z.object({
   clientPhone: phoneSchema,
   clientEmail: emailSchema.optional().or(z.literal('')),
   selectedService: z.string().uuid('Serviço inválido'),
-  selectedProfessional: z.string().uuid('Profissional inválido'),
+  selectedProfessional: z.string().uuid('Profissional inválido').nullable(),
   selectedDate: z.date(),
   selectedTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Horário inválido')
 });
