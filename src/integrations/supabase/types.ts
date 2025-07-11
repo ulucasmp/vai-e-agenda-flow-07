@@ -24,9 +24,11 @@ export type Database = {
           empresa_id: string | null
           horario: string
           id: string
+          link_agendamento: string
           profissional_id: string | null
           servico_id: string | null
           status: string | null
+          status_confirmacao: string | null
         }
         Insert: {
           cliente_email?: string | null
@@ -37,9 +39,11 @@ export type Database = {
           empresa_id?: string | null
           horario: string
           id?: string
+          link_agendamento: string
           profissional_id?: string | null
           servico_id?: string | null
           status?: string | null
+          status_confirmacao?: string | null
         }
         Update: {
           cliente_email?: string | null
@@ -50,9 +54,11 @@ export type Database = {
           empresa_id?: string | null
           horario?: string
           id?: string
+          link_agendamento?: string
           profissional_id?: string | null
           servico_id?: string | null
           status?: string | null
+          status_confirmacao?: string | null
         }
         Relationships: [
           {
