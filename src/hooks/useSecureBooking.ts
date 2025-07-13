@@ -88,18 +88,14 @@ export const useSecureBooking = () => {
       }
 
       // Check for existing booking conflicts
-      let conflictQuery = supabase
+      const conflictQuery = supabase
         .from('agendamentos')
         .select('id')
         .eq('empresa_id', bookingData.empresaId)
+        .eq('servico_id', validatedData.selectedService)
         .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
         .eq('horario', validatedData.selectedTime + ':00')
-        .eq('status', 'confirmado');
-
-      // Only check professional conflict if a professional was selected
-      if (validatedData.selectedProfessional) {
-        conflictQuery = conflictQuery.eq('profissional_id', validatedData.selectedProfessional);
-      }
+        .in('status', ['agendado', 'confirmado']);
 
       const { data: existingBookings, error: conflictError } = await conflictQuery;
 
