@@ -122,7 +122,7 @@ export const useSecureBooking = () => {
         cliente_email: validatedData.clientEmail || null,
         data_agendamento: validatedData.selectedDate.toISOString().split('T')[0],
         horario: validatedData.selectedTime + ':00',
-        status: 'confirmado',
+        status: 'pendente',
         link_agendamento: '' // O trigger gerará automaticamente
       };
 
@@ -132,7 +132,7 @@ export const useSecureBooking = () => {
 
       if (error) {
         // Se for erro de constraint de agendamento duplicado
-        if (error.code === '23505' && error.message.includes('unique_active_booking_slot')) {
+        if (error.code === '23505' && error.message.includes('unique_confirmed_booking_slot')) {
           toast({
             title: "Horário indisponível",
             description: "Este horário acabou de ser reservado por outro cliente. Escolha outro horário.",
