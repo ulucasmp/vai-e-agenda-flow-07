@@ -131,6 +131,15 @@ export const useSecureBooking = () => {
         .insert(agendamentoData);
 
       if (error) {
+        // Se for erro de constraint de agendamento duplicado
+        if (error.code === '23505' && error.message.includes('unique_active_booking_slot')) {
+          toast({
+            title: "Horário indisponível",
+            description: "Este horário acabou de ser reservado por outro cliente. Escolha outro horário.",
+            variant: "destructive",
+          });
+          return { success: false };
+        }
         throw error;
       }
 
