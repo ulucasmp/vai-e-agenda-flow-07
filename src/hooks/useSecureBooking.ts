@@ -88,14 +88,23 @@ export const useSecureBooking = () => {
       }
 
       // Check for existing booking conflicts
-      const conflictQuery = supabase
-        .from('agendamentos')
-        .select('id')
-        .eq('empresa_id', bookingData.empresaId)
-        .eq('servico_id', validatedData.selectedService)
-        .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
-        .eq('horario', validatedData.selectedTime + ':00')
-        .in('status', ['agendado', 'confirmado']);
+      // Se há profissional selecionado, verificar conflitos por profissional
+      // Se não há profissional, verificar conflitos por serviço/empresa
+      const conflictQuery = validatedData.selectedProfessional 
+        ? supabase
+            .from('agendamentos')
+            .select('id')
+            .eq('profissional_id', validatedData.selectedProfessional)
+            .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
+            .eq('horario', validatedData.selectedTime + ':00')
+        : supabase
+            .from('agendamentos')
+            .select('id')
+            .eq('empresa_id', bookingData.empresaId)
+            .eq('servico_id', validatedData.selectedService)
+            .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
+            .eq('horario', validatedData.selectedTime + ':00')
+            .is('profissional_id', null);
 
       const { data: existingBookings, error: conflictError } = await conflictQuery;
 
@@ -122,7 +131,7 @@ export const useSecureBooking = () => {
         cliente_email: validatedData.clientEmail || null,
         data_agendamento: validatedData.selectedDate.toISOString().split('T')[0],
         horario: validatedData.selectedTime + ':00',
-        status: 'pendente',
+        status: 'agendado - pendente de confirmação',
         link_agendamento: '' // O trigger gerará automaticamente
       };
 
@@ -132,10 +141,13 @@ export const useSecureBooking = () => {
 
       if (error) {
         // Se for erro de constraint de agendamento duplicado
-        if (error.code === '23505' && error.message.includes('unique_confirmed_booking_slot')) {
+        if (error.code === '23505' && (
+          error.message.includes('unique_professional_booking_slot') || 
+          error.message.includes('unique_service_booking_slot')
+        )) {
           toast({
             title: "Horário indisponível",
-            description: "Este horário acabou de ser reservado por outro cliente. Escolha outro horário.",
+            description: "Este horário acabou de ser reservado. Escolha outro horário.",
             variant: "destructive",
           });
           return { success: false };
