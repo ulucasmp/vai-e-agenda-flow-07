@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAppointments } from '@/hooks/useAppointments';
 
 interface DayAppointment {
   time: string;
@@ -20,12 +21,12 @@ interface DayScheduleProps {
 }
 
 const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
-  // Para empresas novas, não há agendamentos - lista vazia
-  const dayAppointments: DayAppointment[] = [];
+  const { getAppointmentsByDate } = useAppointments();
+  const dayAppointments = getAppointmentsByDate(selectedDate);
 
   const totalRevenue = dayAppointments
     .filter(apt => apt.status === 'confirmado')
-    .reduce((sum, apt) => sum + apt.price, 0);
+    .reduce((sum, apt) => sum + (apt.servico?.preco || 0), 0);
 
   return (
     <Card className="border-blue-100 shadow-sm">
@@ -68,22 +69,24 @@ const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
             </div>
           ) : (
             dayAppointments.map((appointment, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
+              <div key={appointment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="text-center">
                     <div className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                      {appointment.time}
+                      {appointment.horario.substring(0, 5)}
                     </div>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{appointment.client}</p>
-                    <p className="text-sm text-gray-600">{appointment.service}</p>
-                    <p className="text-xs text-gray-500">com {appointment.professional}</p>
+                    <p className="font-semibold text-gray-900">{appointment.cliente_nome}</p>
+                    <p className="text-sm text-gray-600">{appointment.servico?.nome || 'Serviço não especificado'}</p>
+                    {appointment.profissional && (
+                      <p className="text-xs text-gray-500">com {appointment.profissional.nome}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-600">
-                    R$ {appointment.price}
+                    R$ {appointment.servico?.preco || 0}
                   </span>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${

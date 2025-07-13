@@ -88,6 +88,7 @@ export type Database = {
         Row: {
           created_at: string
           endereco: string | null
+          horarios_funcionamento: Json | null
           id: string
           nome_negocio: string
           owner_id: string
@@ -98,6 +99,7 @@ export type Database = {
         Insert: {
           created_at?: string
           endereco?: string | null
+          horarios_funcionamento?: Json | null
           id?: string
           nome_negocio: string
           owner_id: string
@@ -108,6 +110,7 @@ export type Database = {
         Update: {
           created_at?: string
           endereco?: string | null
+          horarios_funcionamento?: Json | null
           id?: string
           nome_negocio?: string
           owner_id?: string

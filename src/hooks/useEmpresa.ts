@@ -10,6 +10,7 @@ interface Empresa {
   telefone: string | null;
   endereco: string | null;
   slug: string | null;
+  horarios_funcionamento?: any;
   created_at: string;
 }
 

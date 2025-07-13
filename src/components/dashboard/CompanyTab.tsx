@@ -39,6 +39,11 @@ const CompanyTab = () => {
         address: empresa.endereco || '',
         phone: empresa.telefone || '',
       });
+      
+      // Carregar horários de funcionamento salvos ou usar padrão
+      if (empresa.horarios_funcionamento) {
+        setWorkingHours(empresa.horarios_funcionamento as any);
+      }
     }
   }, [empresa]);
 
@@ -131,6 +136,7 @@ const CompanyTab = () => {
           nome_negocio: formData.name,
           endereco: formData.address,
           telefone: formData.phone,
+          horarios_funcionamento: workingHours,
           // slug NÃO é atualizado - permanece fixo para sempre
         })
         .eq('id', empresa.id);

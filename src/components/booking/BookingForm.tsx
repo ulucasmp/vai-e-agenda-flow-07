@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, CheckCircle } from 'lucide-react';
@@ -30,22 +30,39 @@ interface Empresa {
   telefone: string | null;
   endereco: string | null;
   slug: string;
+  horarios_funcionamento?: any;
 }
 
 interface BookingFormProps {
   empresa: Empresa;
   services: Service[];
   professionals: Professional[];
-  availableTimes: string[];
+  getAvailableTimes: (selectedDate?: Date) => Promise<string[]>;
 }
 
-const BookingForm = ({ empresa, services, professionals, availableTimes }: BookingFormProps) => {
+const BookingForm = ({ empresa, services, professionals, getAvailableTimes }: BookingFormProps) => {
   const { createBooking, isLoading } = useSecureBooking();
   const [selectedService, setSelectedService] = useState('');
   const [selectedProfessional, setSelectedProfessional] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState('');
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [clientName, setClientName] = useState('');
+  
+  // Atualizar horários disponíveis quando a data muda
+  useEffect(() => {
+    if (selectedDate) {
+      getAvailableTimes(selectedDate).then(times => {
+        setAvailableTimes(times);
+        // Limpar horário selecionado se não estiver mais disponível
+        if (selectedTime && !times.includes(selectedTime)) {
+          setSelectedTime('');
+        }
+      });
+    } else {
+      setAvailableTimes([]);
+    }
+  }, [selectedDate, selectedTime, getAvailableTimes]);
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [errors, setErrors] = useState<{

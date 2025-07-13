@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAppointments } from '@/hooks/useAppointments';
 
 interface MonthlyCalendarProps {
   onDateSelect: (date: Date) => void;
@@ -14,9 +15,7 @@ interface MonthlyCalendarProps {
 
 const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
-
-  // Para empresas novas, não há agendamentos - calendario limpo
-  const appointmentsByDate: Record<string, number> = {};
+  const { getAppointmentCountByDate } = useAppointments();
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -30,8 +29,7 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) =
   };
 
   const getAppointmentCount = (date: Date) => {
-    const dateKey = formatDateKey(date);
-    return appointmentsByDate[dateKey] || 0;
+    return getAppointmentCountByDate(date);
   };
 
   return (
@@ -115,7 +113,7 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) =
           <p>• Clique em uma data para ver os agendamentos do dia</p>
           <p>• Os números vermelhos indicam a quantidade de agendamentos</p>
           <p>• Azul claro = hoje | Azul escuro = data selecionada</p>
-          <p>• Seu calendário está limpo, aguardando os primeiros agendamentos!</p>
+          <p>• Visualize seus agendamentos conforme eles chegam!</p>
         </div>
       </CardContent>
     </Card>

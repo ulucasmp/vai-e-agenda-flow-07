@@ -14,6 +14,7 @@ interface Empresa {
   telefone: string | null;
   endereco: string | null;
   slug: string;
+  horarios_funcionamento?: any;
 }
 
 interface Professional {
@@ -53,7 +54,7 @@ const BookingPage = () => {
         // Buscar empresa pelo slug
         const { data: empresaData, error: empresaError } = await supabase
           .from('empresas')
-          .select('id, nome_negocio, tipo, telefone, endereco, slug')
+          .select('id, nome_negocio, tipo, telefone, endereco, slug, horarios_funcionamento')
           .eq('slug', slug)
           .maybeSingle();
 
@@ -132,11 +133,15 @@ const BookingPage = () => {
     fetchCompanyData();
   }, [slug, toast]);
 
-  // Horários disponíveis padrão
-  const availableTimes = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-  ];
+  // Horários disponíveis baseados na configuração da empresa
+  const getAvailableTimes = async (selectedDate?: Date): Promise<string[]> => {
+    if (!empresa?.horarios_funcionamento || !selectedDate) {
+      return [];
+    }
+    
+    const module = await import('@/utils/timeUtils');
+    return module.generateAvailableTimes(empresa.horarios_funcionamento, selectedDate);
+  };
 
   if (loading) {
     return (
@@ -161,7 +166,7 @@ const BookingPage = () => {
     address: empresa.endereco || '',
     logo: '',
     businessPhoto: null,
-    workingHours: {
+    workingHours: empresa.horarios_funcionamento || {
       segunda: { active: true, start: '08:00', end: '18:00' },
       terca: { active: true, start: '08:00', end: '18:00' },
       quarta: { active: true, start: '08:00', end: '18:00' },
@@ -183,7 +188,7 @@ const BookingPage = () => {
           empresa={empresa}
           services={services}
           professionals={professionals}
-          availableTimes={availableTimes}
+          getAvailableTimes={getAvailableTimes}
         />
       </div>
     </div>

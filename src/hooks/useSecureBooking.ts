@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { bookingSchema, validateBusinessHours } from '@/utils/validation';
+import { isTimeWithinBusinessHours } from '@/utils/timeUtils';
 
 interface BookingData {
   clientName: string;
@@ -62,14 +63,28 @@ export const useSecureBooking = () => {
         selectedTime: bookingData.selectedTime
       });
 
-      // Validate business hours
-      if (!validateBusinessHours(validatedData.selectedDate, validatedData.selectedTime)) {
-        toast({
-          title: "Horário inválido",
-          description: "Este horário não está disponível para agendamento.",
-          variant: "destructive",
-        });
-        return { success: false };
+      // Buscar horários de funcionamento da empresa
+      const { data: empresaData } = await supabase
+        .from('empresas')
+        .select('horarios_funcionamento')
+        .eq('id', bookingData.empresaId)
+        .single();
+
+      if (empresaData?.horarios_funcionamento) {
+        const isValidTime = isTimeWithinBusinessHours(
+          empresaData.horarios_funcionamento as any,
+          validatedData.selectedDate,
+          validatedData.selectedTime
+        );
+
+        if (!isValidTime) {
+          toast({
+            title: "Horário inválido",
+            description: "Este horário não está disponível para agendamento.",
+            variant: "destructive",
+          });
+          return { success: false };
+        }
       }
 
       // Check for existing booking conflicts
@@ -111,12 +126,13 @@ export const useSecureBooking = () => {
         cliente_email: validatedData.clientEmail || null,
         data_agendamento: validatedData.selectedDate.toISOString().split('T')[0],
         horario: validatedData.selectedTime,
-        status: 'confirmado'
+        status: 'confirmado',
+        link_agendamento: '' // O trigger gerará automaticamente
       };
 
       const { error } = await supabase
         .from('agendamentos')
-        .insert([agendamentoData]);
+        .insert(agendamentoData);
 
       if (error) {
         throw error;
