@@ -11,9 +11,10 @@ import { useAppointments } from '@/hooks/useAppointments';
 interface MonthlyCalendarProps {
   onDateSelect: (date: Date) => void;
   selectedDate?: Date;
+  getAppointmentCount?: (date: Date) => number;
 }
 
-const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) => {
+const MonthlyCalendar = ({ onDateSelect, selectedDate, getAppointmentCount: getAppointmentCountProp }: MonthlyCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
   const { getAppointmentCountByDate } = useAppointments();
 
@@ -29,7 +30,7 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate }: MonthlyCalendarProps) =
   };
 
   const getAppointmentCount = (date: Date) => {
-    return getAppointmentCountByDate(date);
+    return getAppointmentCountProp ? getAppointmentCountProp(date) : getAppointmentCountByDate(date);
   };
 
   return (

@@ -15,14 +15,32 @@ interface DayAppointment {
   price: number;
 }
 
+interface Appointment {
+  id: string;
+  cliente_nome: string;
+  cliente_telefone: string;
+  cliente_email: string | null;
+  data_agendamento: string;
+  horario: string;
+  status: string;
+  servico: {
+    nome: string;
+    preco: number;
+  } | null;
+  profissional: {
+    nome: string;
+  } | null;
+}
+
 interface DayScheduleProps {
   selectedDate: Date;
   onClose?: () => void;
+  appointments?: Appointment[];
 }
 
-const DaySchedule = ({ selectedDate, onClose }: DayScheduleProps) => {
+const DaySchedule = ({ selectedDate, onClose, appointments: appointmentsProp }: DayScheduleProps) => {
   const { getAppointmentsByDate } = useAppointments();
-  const dayAppointments = getAppointmentsByDate(selectedDate);
+  const dayAppointments = appointmentsProp || getAppointmentsByDate(selectedDate);
 
   const totalRevenue = dayAppointments
     .filter(apt => apt.status === 'confirmado')
