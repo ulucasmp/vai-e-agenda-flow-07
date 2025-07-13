@@ -52,9 +52,6 @@ const Auth = () => {
     if (password.length > 128) {
       return 'A senha deve ter no máximo 128 caracteres';
     }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      return 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número';
-    }
     return null;
   };
 
@@ -304,7 +301,7 @@ const Auth = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Mínimo 6 caracteres com letra maiúscula, minúscula e número
+                      Mínimo 6 caracteres
                     </p>
                   </div>
                   
