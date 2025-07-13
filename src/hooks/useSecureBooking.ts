@@ -93,7 +93,7 @@ export const useSecureBooking = () => {
         .select('id')
         .eq('empresa_id', bookingData.empresaId)
         .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
-        .eq('horario', validatedData.selectedTime)
+        .eq('horario', validatedData.selectedTime + ':00')
         .eq('status', 'confirmado');
 
       // Only check professional conflict if a professional was selected
@@ -125,7 +125,7 @@ export const useSecureBooking = () => {
         cliente_telefone: validatedData.clientPhone,
         cliente_email: validatedData.clientEmail || null,
         data_agendamento: validatedData.selectedDate.toISOString().split('T')[0],
-        horario: validatedData.selectedTime,
+        horario: validatedData.selectedTime + ':00',
         status: 'confirmado',
         link_agendamento: '' // O trigger gerará automaticamente
       };
