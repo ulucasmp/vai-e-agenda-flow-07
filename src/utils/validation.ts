@@ -35,9 +35,10 @@ export const businessNameSchema = z.string()
 
 // Address validation
 export const addressSchema = z.string()
+  .min(1, 'Endereço é obrigatório')
+  .min(5, 'Endereço deve ter pelo menos 5 caracteres')
   .max(255, 'Endereço muito longo')
-  .regex(/^[a-zA-ZÀ-ÿ0-9\s,.-]*$/, 'Endereço contém caracteres inválidos')
-  .optional();
+  .regex(/^[a-zA-ZÀ-ÿ0-9\s,.-]*$/, 'Endereço contém caracteres inválidos');
 
 // Booking validation schemas
 export const bookingSchema = z.object({

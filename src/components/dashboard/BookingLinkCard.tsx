@@ -14,8 +14,8 @@ const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
   const { toast } = useToast();
   const { empresa } = useEmpresa();
   
-  // Use o slug salvo no banco de dados, nunca gere automaticamente
-  const bookingLink = empresa?.slug ? `${window.location.origin}/agendamento/${empresa.slug}` : '';
+  // Use o link_agendamento salvo no banco, com fallback para o slug
+  const bookingLink = empresa?.link_agendamento || (empresa?.slug ? `${window.location.origin}/agendamento/${empresa.slug}` : '');
 
   const handleCopyLink = async () => {
     if (!bookingLink) {
@@ -76,7 +76,7 @@ const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
     });
   };
 
-  if (!empresa?.slug) {
+  if (!bookingLink) {
     return (
       <Card className="border-blue-100 shadow-sm">
         <CardHeader>
@@ -87,7 +87,7 @@ const BookingLinkCard = ({ companyName }: BookingLinkCardProps) => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600">
-            Slug da empresa não encontrado. Entre em contato com o suporte.
+            Link de agendamento não encontrado. Entre em contato com o suporte.
           </p>
         </CardContent>
       </Card>

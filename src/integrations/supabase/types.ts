@@ -90,6 +90,7 @@ export type Database = {
           endereco: string | null
           horarios_funcionamento: Json | null
           id: string
+          link_agendamento: string | null
           nome_negocio: string
           owner_id: string
           slug: string | null
@@ -101,6 +102,7 @@ export type Database = {
           endereco?: string | null
           horarios_funcionamento?: Json | null
           id?: string
+          link_agendamento?: string | null
           nome_negocio: string
           owner_id: string
           slug?: string | null
@@ -112,6 +114,7 @@ export type Database = {
           endereco?: string | null
           horarios_funcionamento?: Json | null
           id?: string
+          link_agendamento?: string | null
           nome_negocio?: string
           owner_id?: string
           slug?: string | null

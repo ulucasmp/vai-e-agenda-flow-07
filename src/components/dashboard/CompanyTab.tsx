@@ -47,8 +47,9 @@ const CompanyTab = () => {
     }
   }, [empresa]);
 
-  // Use sempre o slug salvo no banco de dados
+  // Use o link_agendamento salvo no banco, com fallback para o slug
   const generateBookingLink = (): string => {
+    if (empresa?.link_agendamento) return empresa.link_agendamento;
     if (!empresa?.slug) return '';
     const currentDomain = window.location.origin;
     return `${currentDomain}/agendamento/${empresa.slug}`;

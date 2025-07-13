@@ -115,8 +115,8 @@ const EmpresaSetup = () => {
       nome_negocio: validation.data.nome_negocio,
       tipo: validation.data.tipo,
       telefone: validation.data.telefone || null,
-      endereco: validation.data.endereco || null,
-      // slug será gerado automaticamente pelo trigger do banco
+      endereco: validation.data.endereco,
+      // slug e link_agendamento serão gerados automaticamente pelos triggers do banco
     };
 
     console.log('Dados da empresa a serem inseridos:', empresaData);
@@ -137,7 +137,7 @@ const EmpresaSetup = () => {
     } else {
       toast({
         title: "Empresa cadastrada com sucesso!",
-        description: `Sua URL pública é: /agendamento/${data.slug}`,
+        description: `Sua URL pública: ${data.link_agendamento || `/agendamento/${data.slug}`}`,
       });
       navigate('/dashboard');
     }
@@ -232,11 +232,12 @@ const EmpresaSetup = () => {
               </div>
 
               <div>
-                <Label htmlFor="endereco">Endereço</Label>
+                <Label htmlFor="endereco">Endereço *</Label>
                 <Input
                   id="endereco"
                   name="endereco"
                   type="text"
+                  required
                   placeholder="Rua, número, bairro, cidade"
                   disabled={isLoading}
                   maxLength={255}
