@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { User, Clock, CheckCircle } from 'lucide-react';
 
 interface Appointment {
   id: string;
@@ -13,6 +15,8 @@ interface Appointment {
   servico_nome?: string;
   profissional_nome?: string;
   status: string;
+  servico_preco?: number;
+  servico_duracao?: number;
 }
 
 interface AppointmentsListProps {
@@ -39,7 +43,7 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
             horario,
             cliente_nome,
             status,
-            servicos:servico_id(nome),
+            servicos:servico_id(nome, preco, duracao_em_minutos),
             profissionais:profissional_id(nome)
           `)
           .eq('empresa_id', empresaId)
@@ -58,7 +62,9 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
             cliente_nome: appointment.cliente_nome,
             servico_nome: appointment.servicos?.nome || 'Serviço não informado',
             profissional_nome: appointment.profissionais?.nome || 'Profissional não informado',
-            status: appointment.status || 'pendente'
+            status: appointment.status || 'pendente',
+            servico_preco: appointment.servicos?.preco || 0,
+            servico_duracao: appointment.servicos?.duracao_em_minutos || 0
           })) || [];
           
           setAppointments(formattedAppointments);
@@ -73,20 +79,23 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
     fetchAppointments();
   }, [empresaId]);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'confirmado':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'agendado - pendente de confirmação':
-      case 'pendente':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'cancelado':
-        return 'bg-red-100 text-red-700 border-red-200';
-      case 'reagendado':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+  const getStatusBadge = (status: string) => {
+    const isConfirmed = status.toLowerCase().includes('confirmado');
+    
+    if (isConfirmed) {
+      return (
+        <Badge className="bg-green-500 hover:bg-green-600 text-white border-0">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Confirmado
+        </Badge>
+      );
     }
+    
+    return (
+      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+        Pendente
+      </Badge>
+    );
   };
 
   const formatAppointmentInfo = (appointment: Appointment) => {
@@ -147,32 +156,53 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
         <CardTitle className="text-lg text-gray-900">Próximos Agendamentos</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {appointments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>Nenhum agendamento próximo encontrado.</p>
             </div>
           ) : (
             appointments.map((appointment) => {
-              const { dayOfWeek, formattedDate, time } = formatAppointmentInfo(appointment);
+              const { time } = formatAppointmentInfo(appointment);
               
               return (
-                <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-lg">🕗</span>
-                      <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                        {time} ({dayOfWeek}, {formattedDate})
-                      </div>
+                <div key={appointment.id} className="p-4 bg-green-50 rounded-2xl border border-green-100 hover:bg-green-100/50 transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-lg">
+                        {appointment.cliente_nome}
+                      </h3>
+                      <p className="text-gray-700 font-medium">
+                        {appointment.servico_nome}
+                      </p>
                     </div>
-                    <div className="text-sm text-gray-600 truncate">
-                      – {appointment.profissional_nome} – {appointment.servico_nome}
+                    <div className="text-right">
+                      <div className="text-green-600 font-bold text-xl mb-1">
+                        {time}
+                      </div>
+                      {appointment.servico_preco > 0 && (
+                        <div className="text-gray-700 font-semibold">
+                          R$ {appointment.servico_preco.toFixed(2).replace('.', ',')}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getStatusColor(appointment.status)}`}>
-                      {formatStatus(appointment.status)}
-                    </span>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4 text-gray-600 text-sm">
+                      <div className="flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        <span>{appointment.profissional_nome}</span>
+                      </div>
+                      {appointment.servico_duracao > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{appointment.servico_duracao}min</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {getStatusBadge(appointment.status)}
                   </div>
                 </div>
               );
