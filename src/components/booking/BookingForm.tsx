@@ -62,7 +62,7 @@ const BookingForm = ({ empresa, services, professionals, getAvailableTimes }: Bo
     } else {
       setAvailableTimes([]);
     }
-  }, [selectedDate, selectedTime, getAvailableTimes]);
+  }, [selectedDate]); // Removido getAvailableTimes e selectedTime das dependências
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [errors, setErrors] = useState<{
