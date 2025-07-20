@@ -219,13 +219,13 @@ const BookingPage = () => {
     logo: '',
     businessPhoto: null,
     workingHours: empresa.horarios_funcionamento || {
-      segunda: { active: true, start: '08:00', end: '18:00' },
-      terca: { active: true, start: '08:00', end: '18:00' },
-      quarta: { active: true, start: '08:00', end: '18:00' },
-      quinta: { active: true, start: '08:00', end: '18:00' },
-      sexta: { active: true, start: '08:00', end: '18:00' },
-      sabado: { active: true, start: '08:00', end: '18:00' },
-      domingo: { active: false, start: '08:00', end: '18:00' }
+      segunda: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+      terca: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+      quarta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+      quinta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+      sexta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+      sabado: { active: false, shifts: [] },
+      domingo: { active: false, shifts: [] }
     }
   };
 
