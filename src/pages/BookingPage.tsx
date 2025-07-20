@@ -42,6 +42,7 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchCompanyData = async () => {
       console.log('BookingPage: Iniciando carregamento, slug:', slug);
+      console.log('BookingPage: URL completa:', window.location.href);
       
       if (!slug) {
         console.error('BookingPage: Slug não fornecido');
@@ -196,12 +197,14 @@ const BookingPage = () => {
   };
 
   if (loading) {
+    console.log('BookingPage: Renderizando estado de loading, slug:', slug);
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-8 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando informações...</p>
           <p className="text-sm text-gray-500 mt-2">Buscando empresa: {slug}</p>
+          <p className="text-xs text-gray-400 mt-1">URL: {window.location.href}</p>
         </div>
       </div>
     );
