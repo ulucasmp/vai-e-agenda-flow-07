@@ -41,6 +41,8 @@ const BookingPage = () => {
 
   useEffect(() => {
     const fetchCompanyData = async () => {
+      console.log('BookingPage: Iniciando carregamento, slug:', slug);
+      
       if (!slug) {
         console.error('BookingPage: Slug não fornecido');
         setNotFound(true);
@@ -159,6 +161,14 @@ const BookingPage = () => {
           .eq('data_agendamento', selectedDateStr)
           .eq('status', 'agendado - pendente de confirmação')
       ]);
+
+      if (bloqueiosResult.error) {
+        console.error('Erro ao buscar bloqueios:', bloqueiosResult.error);
+      }
+      
+      if (agendamentosResult.error) {
+        console.error('Erro ao buscar agendamentos:', agendamentosResult.error);
+      }
 
       const bloqueios = bloqueiosResult.data || [];
       const agendamentos = agendamentosResult.data || [];
