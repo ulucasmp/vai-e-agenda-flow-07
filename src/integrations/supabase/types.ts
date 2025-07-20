@@ -84,6 +84,36 @@ export type Database = {
           },
         ]
       }
+      bloqueios: {
+        Row: {
+          criado_em: string
+          data: string
+          descricao: string | null
+          empresa_id: string
+          hora_fim: string
+          hora_inicio: string
+          id: string
+        }
+        Insert: {
+          criado_em?: string
+          data: string
+          descricao?: string | null
+          empresa_id: string
+          hora_fim: string
+          hora_inicio: string
+          id?: string
+        }
+        Update: {
+          criado_em?: string
+          data?: string
+          descricao?: string | null
+          empresa_id?: string
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+        }
+        Relationships: []
+      }
       empresas: {
         Row: {
           created_at: string

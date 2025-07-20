@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBloqueios } from './useBloqueios';
 
 interface Appointment {
   id: string;
@@ -23,6 +24,7 @@ export const useAppointments = (empresaId?: string) => {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isTimeBlocked } = useBloqueios(empresaId);
 
   const fetchAppointments = async () => {
     if (!user && !empresaId) return;
@@ -106,12 +108,24 @@ export const useAppointments = (empresaId?: string) => {
     );
   };
 
+  // Verificar se um horário está disponível (não bloqueado e não agendado)
+  const isTimeAvailable = (date: Date, time: string, professionalId?: string): boolean => {
+    const timeString = time.includes(':') ? time : time + ':00';
+    const endTime = new Date(`2000-01-01 ${timeString}`);
+    endTime.setHours(endTime.getHours() + 1); // Assumindo 1 hora de duração
+    const endTimeString = endTime.toTimeString().slice(0, 5);
+    
+    // Verifica se não está bloqueado nem agendado
+    return !isTimeBlocked(date, time, endTimeString) && !isTimeBooked(date, time, professionalId);
+  };
+
   return {
     appointments,
     loading,
     getAppointmentsByDate,
     getAppointmentCountByDate,
     isTimeBooked,
+    isTimeAvailable,
     refetch: fetchAppointments
   };
 };

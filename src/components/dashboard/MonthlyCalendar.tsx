@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppointments } from '@/hooks/useAppointments';
+import { useBloqueios } from '@/hooks/useBloqueios';
+import { useEmpresa } from '@/hooks/useEmpresa';
+import { Lock } from 'lucide-react';
 
 interface MonthlyCalendarProps {
   onDateSelect: (date: Date) => void;
@@ -17,6 +20,9 @@ interface MonthlyCalendarProps {
 const MonthlyCalendar = ({ onDateSelect, selectedDate, getAppointmentCount: getAppointmentCountProp }: MonthlyCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
   const { getAppointmentCountByDate } = useAppointments();
+  
+  const { empresa } = useEmpresa();
+  const { getBloqueiosByDate } = useBloqueios(empresa?.id);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -81,6 +87,7 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate, getAppointmentCount: getA
             components={{
               Day: ({ date: currentDate, ...props }) => {
                 const appointmentCount = getAppointmentCount(currentDate);
+                const bloqueiosCount = getBloqueiosByDate(currentDate).length;
                 const isToday = currentDate.toDateString() === new Date().toDateString();
                 const isSelected = selectedDate && currentDate.toDateString() === selectedDate.toDateString();
                 
@@ -95,14 +102,21 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate, getAppointmentCount: getA
                     onClick={() => handleDateSelect(currentDate)}
                   >
                     <span className="text-sm">{currentDate.getDate()}</span>
-                    {appointmentCount > 0 && (
-                      <Badge 
-                        variant="secondary" 
-                        className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] bg-red-500 text-white rounded-full flex items-center justify-center min-w-[16px]"
-                      >
-                        {appointmentCount}
-                      </Badge>
-                    )}
+                    <div className="absolute -top-1 -right-1 flex flex-col gap-1">
+                      {appointmentCount > 0 && (
+                        <Badge 
+                          variant="secondary" 
+                          className="h-4 w-4 p-0 text-[10px] bg-red-500 text-white rounded-full flex items-center justify-center min-w-[16px]"
+                        >
+                          {appointmentCount}
+                        </Badge>
+                      )}
+                      {bloqueiosCount > 0 && (
+                        <div className="h-4 w-4 bg-gray-400 rounded-full flex items-center justify-center">
+                          <Lock className="h-2 w-2 text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               },
@@ -113,8 +127,8 @@ const MonthlyCalendar = ({ onDateSelect, selectedDate, getAppointmentCount: getA
         <div className="mt-4 text-xs sm:text-sm text-gray-600 space-y-1">
           <p>• Clique em uma data para ver os agendamentos do dia</p>
           <p>• Os números vermelhos indicam a quantidade de agendamentos</p>
+          <p>• Os ícones de cadeado indicam horários bloqueados</p>
           <p>• Azul claro = hoje | Azul escuro = data selecionada</p>
-          <p>• Visualize seus agendamentos conforme eles chegam!</p>
         </div>
       </CardContent>
     </Card>

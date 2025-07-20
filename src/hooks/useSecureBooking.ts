@@ -87,6 +87,34 @@ export const useSecureBooking = () => {
         }
       }
 
+      // Verificar se o horário está bloqueado
+      const selectedDateStr = validatedData.selectedDate.toISOString().split('T')[0];
+      const selectedTimeStr = validatedData.selectedTime + ':00';
+
+      const { data: bloqueios, error: bloqueioError } = await supabase
+        .from('bloqueios')
+        .select('hora_inicio, hora_fim')
+        .eq('empresa_id', bookingData.empresaId)
+        .eq('data', selectedDateStr);
+
+      if (bloqueioError) {
+        throw new Error('Erro ao verificar bloqueios de horário');
+      }
+
+      // Verificar se o horário está em algum bloqueio
+      const isBlocked = bloqueios?.some(bloqueio => {
+        return selectedTimeStr >= bloqueio.hora_inicio && selectedTimeStr < bloqueio.hora_fim;
+      });
+
+      if (isBlocked) {
+        toast({
+          title: "Horário bloqueado",
+          description: "Este horário não está disponível para agendamento.",
+          variant: "destructive",
+        });
+        return { success: false };
+      }
+
       // Check for existing booking conflicts
       // Se há profissional selecionado, verificar conflitos por profissional
       // Se não há profissional, verificar conflitos por serviço/empresa
@@ -95,15 +123,15 @@ export const useSecureBooking = () => {
             .from('agendamentos')
             .select('id')
             .eq('profissional_id', validatedData.selectedProfessional)
-            .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
-            .eq('horario', validatedData.selectedTime + ':00')
+            .eq('data_agendamento', selectedDateStr)
+            .eq('horario', selectedTimeStr)
         : supabase
             .from('agendamentos')
             .select('id')
             .eq('empresa_id', bookingData.empresaId)
             .eq('servico_id', validatedData.selectedService)
-            .eq('data_agendamento', validatedData.selectedDate.toISOString().split('T')[0])
-            .eq('horario', validatedData.selectedTime + ':00')
+            .eq('data_agendamento', selectedDateStr)
+            .eq('horario', selectedTimeStr)
             .is('profissional_id', null);
 
       const { data: existingBookings, error: conflictError } = await conflictQuery;
