@@ -1,7 +1,11 @@
-export interface WorkingHour {
-  active: boolean;
+export interface Shift {
   start: string;
   end: string;
+}
+
+export interface WorkingHour {
+  active: boolean;
+  shifts: Shift[];
 }
 
 export interface WorkingHours {
@@ -34,21 +38,30 @@ export const generateAvailableTimes = (workingHours: WorkingHours, selectedDate:
   const dayHours = workingHours[dayKey];
   const times: string[] = [];
   
-  // Converter horários de início e fim para minutos
-  const [startHour, startMinute] = dayHours.start.split(':').map(Number);
-  const [endHour, endMinute] = dayHours.end.split(':').map(Number);
+  // Processar cada turno do dia
+  dayHours.shifts.forEach(shift => {
+    // Converter horários de início e fim para minutos
+    const [startHour, startMinute] = shift.start.split(':').map(Number);
+    const [endHour, endMinute] = shift.end.split(':').map(Number);
+    
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    
+    // Gerar horários de 30 em 30 minutos para este turno
+    for (let minutes = startMinutes; minutes < endMinutes; minutes += 30) {
+      const hour = Math.floor(minutes / 60);
+      const minute = minutes % 60;
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      
+      // Evitar horários duplicados entre turnos
+      if (!times.includes(timeString)) {
+        times.push(timeString);
+      }
+    }
+  });
   
-  const startMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
-  
-  // Gerar horários de 30 em 30 minutos
-  for (let minutes = startMinutes; minutes < endMinutes; minutes += 30) {
-    const hour = Math.floor(minutes / 60);
-    const minute = minutes % 60;
-    times.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
-  }
-  
-  return times;
+  // Ordenar os horários
+  return times.sort();
 };
 
 // Verificar se um horário está dentro do funcionamento

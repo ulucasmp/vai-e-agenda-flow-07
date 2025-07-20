@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Upload, X, Image } from 'lucide-react';
+import { ExternalLink, Upload, X, Image, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
@@ -22,14 +22,64 @@ const CompanyTab = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [businessPhotoPreview, setBusinessPhotoPreview] = useState<string | null>(null);
   const [workingHours, setWorkingHours] = useState({
-    segunda: { active: true, start: '08:00', end: '18:00' },
-    terca: { active: true, start: '08:00', end: '18:00' },
-    quarta: { active: true, start: '08:00', end: '18:00' },
-    quinta: { active: true, start: '08:00', end: '18:00' },
-    sexta: { active: true, start: '08:00', end: '18:00' },
-    sabado: { active: true, start: '08:00', end: '18:00' },
-    domingo: { active: false, start: '08:00', end: '18:00' }
+    segunda: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+    terca: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+    quarta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+    quinta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+    sexta: { active: true, shifts: [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }] },
+    sabado: { active: false, shifts: [] },
+    domingo: { active: false, shifts: [] }
   });
+
+  // Função para migrar formato antigo para novo formato
+  const migrateOldFormat = (oldHours: any) => {
+    const newFormat: any = {};
+    
+    Object.keys(oldHours).forEach(day => {
+      const dayData = oldHours[day];
+      
+      // Se já está no novo formato, manter
+      if (dayData.shifts) {
+        newFormat[day] = dayData;
+      } else {
+        // Migrar do formato antigo para novo
+        if (dayData.active && dayData.start && dayData.end) {
+          // Dividir em dois turnos padrão: manhã e tarde
+          const startTime = dayData.start;
+          const endTime = dayData.end;
+          
+          // Se o horário é contínuo (mais de 6 horas), dividir em dois turnos
+          const [startHour] = startTime.split(':').map(Number);
+          const [endHour] = endTime.split(':').map(Number);
+          const totalHours = endHour - startHour;
+          
+          if (totalHours > 6) {
+            newFormat[day] = {
+              active: true,
+              shifts: [
+                { start: '08:00', end: '12:00' },
+                { start: '14:00', end: '18:00' }
+              ]
+            };
+          } else {
+            // Manter como um turno só
+            newFormat[day] = {
+              active: true,
+              shifts: [{ start: startTime, end: endTime }]
+            };
+          }
+        } else {
+          // Dia inativo
+          newFormat[day] = {
+            active: false,
+            shifts: []
+          };
+        }
+      }
+    });
+    
+    return newFormat;
+  };
 
   // Carrega os dados da empresa quando o componente monta ou empresa muda
   useEffect(() => {
@@ -42,7 +92,8 @@ const CompanyTab = () => {
       
       // Carregar horários de funcionamento salvos ou usar padrão
       if (empresa.horarios_funcionamento) {
-        setWorkingHours(empresa.horarios_funcionamento as any);
+        const migratedHours = migrateOldFormat(empresa.horarios_funcionamento);
+        setWorkingHours(migratedHours);
       }
     }
   }, [empresa]);
@@ -116,7 +167,7 @@ const CompanyTab = () => {
     });
   };
 
-  const handleWorkingHourChange = (day: string, field: 'active' | 'start' | 'end', value: boolean | string) => {
+  const handleWorkingHourChange = (day: string, field: 'active', value: boolean) => {
     setWorkingHours(prev => ({
       ...prev,
       [day]: {
@@ -124,6 +175,50 @@ const CompanyTab = () => {
         [field]: value
       }
     }));
+  };
+
+  const handleShiftChange = (day: string, shiftIndex: number, field: 'start' | 'end', value: string) => {
+    setWorkingHours(prev => {
+      const dayData = prev[day as keyof typeof prev];
+      const newShifts = [...dayData.shifts];
+      newShifts[shiftIndex] = { ...newShifts[shiftIndex], [field]: value };
+      
+      return {
+        ...prev,
+        [day]: {
+          ...dayData,
+          shifts: newShifts
+        }
+      };
+    });
+  };
+
+  const addShift = (day: string) => {
+    setWorkingHours(prev => {
+      const dayData = prev[day as keyof typeof prev];
+      return {
+        ...prev,
+        [day]: {
+          ...dayData,
+          shifts: [...dayData.shifts, { start: '09:00', end: '17:00' }]
+        }
+      };
+    });
+  };
+
+  const removeShift = (day: string, shiftIndex: number) => {
+    setWorkingHours(prev => {
+      const dayData = prev[day as keyof typeof prev];
+      const newShifts = dayData.shifts.filter((_, index) => index !== shiftIndex);
+      
+      return {
+        ...prev,
+        [day]: {
+          ...dayData,
+          shifts: newShifts
+        }
+      };
+    });
   };
 
   const handleSaveChanges = async () => {
@@ -297,48 +392,85 @@ const CompanyTab = () => {
             {/* Horário de Funcionamento */}
             <div>
               <label className="block text-sm font-medium mb-3">Horário de Funcionamento</label>
-              <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-100">
+              <div className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
                 {daysOfWeek.map(({ key, label }) => (
-                  <div key={key} className="flex items-center gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={key}
-                        checked={workingHours[key as keyof typeof workingHours].active}
-                        onCheckedChange={(checked) => 
-                          handleWorkingHourChange(key, 'active', checked as boolean)
-                        }
-                      />
-                      <label 
-                        htmlFor={key} 
-                        className="text-sm font-medium min-w-[100px]"
-                      >
-                        {label}
-                      </label>
+                  <div key={key} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={key}
+                          checked={workingHours[key as keyof typeof workingHours].active}
+                          onCheckedChange={(checked) => 
+                            handleWorkingHourChange(key, 'active', checked as boolean)
+                          }
+                        />
+                        <label 
+                          htmlFor={key} 
+                          className="text-sm font-medium min-w-[100px]"
+                        >
+                          {label}
+                        </label>
+                      </div>
+                      
+                      {workingHours[key as keyof typeof workingHours].active && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addShift(key)}
+                          className="h-6 px-2 text-xs"
+                        >
+                          <Plus className="w-3 h-3 mr-1" />
+                          Turno
+                        </Button>
+                      )}
                     </div>
                     
                     {workingHours[key as keyof typeof workingHours].active && (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="time"
-                          value={workingHours[key as keyof typeof workingHours].start}
-                          onChange={(e) => handleWorkingHourChange(key, 'start', e.target.value)}
-                          className="px-2 py-1 border border-blue-200 rounded text-sm focus:border-blue-300 focus:ring-1 focus:ring-blue-100"
-                        />
-                        <span className="text-sm text-gray-500">às</span>
-                        <input
-                          type="time"
-                          value={workingHours[key as keyof typeof workingHours].end}
-                          onChange={(e) => handleWorkingHourChange(key, 'end', e.target.value)}
-                          className="px-2 py-1 border border-blue-200 rounded text-sm focus:border-blue-300 focus:ring-1 focus:ring-blue-100"
-                        />
+                      <div className="space-y-2 ml-6">
+                        {workingHours[key as keyof typeof workingHours].shifts.map((shift, shiftIndex) => (
+                          <div key={shiftIndex} className="flex items-center gap-2">
+                            <input
+                              type="time"
+                              value={shift.start}
+                              onChange={(e) => handleShiftChange(key, shiftIndex, 'start', e.target.value)}
+                              className="px-2 py-1 border border-blue-200 rounded text-sm focus:border-blue-300 focus:ring-1 focus:ring-blue-100"
+                            />
+                            <span className="text-sm text-gray-500">às</span>
+                            <input
+                              type="time"
+                              value={shift.end}
+                              onChange={(e) => handleShiftChange(key, shiftIndex, 'end', e.target.value)}
+                              className="px-2 py-1 border border-blue-200 rounded text-sm focus:border-blue-300 focus:ring-1 focus:ring-blue-100"
+                            />
+                            {workingHours[key as keyof typeof workingHours].shifts.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeShift(key, shiftIndex)}
+                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                     
                     {!workingHours[key as keyof typeof workingHours].active && (
-                      <span className="text-sm text-gray-500">Fechado</span>
+                      <div className="ml-6">
+                        <span className="text-sm text-gray-500">Fechado</span>
+                      </div>
                     )}
                   </div>
                 ))}
+                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                  <p className="text-xs text-gray-600">
+                    💡 <strong>Dica:</strong> Os intervalos entre turnos (ex: 12:00-14:00) não estarão disponíveis para agendamento no link público.
+                  </p>
+                </div>
               </div>
             </div>
 
