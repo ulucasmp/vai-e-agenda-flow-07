@@ -67,8 +67,8 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .trim();
   };
 
-  // DEPRECATED: Use sempre o slug do banco de dados
-  const companySlug = generateSlug(companySettings.name);
+  // Removido para evitar warnings desnecessários - use sempre o slug do banco de dados
+  const companySlug = "deprecated-use-database-slug";
 
   const updateCompanySettings = (newSettings: Partial<CompanySettings>) => {
     const updatedSettings = { ...companySettings, ...newSettings };
