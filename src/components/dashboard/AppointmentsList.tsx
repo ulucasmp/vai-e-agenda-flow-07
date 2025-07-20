@@ -43,7 +43,6 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
             profissionais:profissional_id(nome)
           `)
           .eq('empresa_id', empresaId)
-          .eq('status', 'confirmado')
           .gte('data_agendamento', new Date().toISOString().split('T')[0])
           .order('data_agendamento', { ascending: true })
           .order('horario', { ascending: true })
