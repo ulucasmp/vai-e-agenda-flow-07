@@ -41,8 +41,10 @@ const BookingPage = () => {
 
   useEffect(() => {
     const fetchCompanyData = async () => {
+      console.log('=== BOOKING PAGE DEBUG ===');
       console.log('BookingPage: Iniciando carregamento, slug:', slug);
       console.log('BookingPage: URL completa:', window.location.href);
+      console.log('BookingPage: Path atual:', window.location.pathname);
       
       if (!slug) {
         console.error('BookingPage: Slug não fornecido');
