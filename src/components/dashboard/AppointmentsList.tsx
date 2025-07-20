@@ -84,15 +84,15 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
     
     if (isConfirmed) {
       return (
-        <Badge className="bg-green-500 hover:bg-green-600 text-white border-0">
-          <CheckCircle className="w-3 h-3 mr-1" />
+        <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 text-xs px-2 py-1">
+          <CheckCircle className="w-2.5 h-2.5 mr-1" />
           Confirmado
         </Badge>
       );
     }
     
     return (
-      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs px-2 py-1">
         Pendente
       </Badge>
     );
@@ -108,14 +108,16 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
       return {
         dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
         formattedDate,
-        time
+        time,
+        fullDateString: `(${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${formattedDate})`
       };
     } catch (error) {
       console.error('Erro ao formatar data:', error);
       return {
         dayOfWeek: '---',
         formattedDate: '00/00/0000',
-        time: '00:00'
+        time: '00:00',
+        fullDateString: '(---, 00/00/0000)'
       };
     }
   };
@@ -156,32 +158,35 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
         <CardTitle className="text-lg text-gray-900">Próximos Agendamentos</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {appointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>Nenhum agendamento próximo encontrado.</p>
+            <div className="text-center py-6 text-gray-500">
+              <p className="text-sm">Nenhum agendamento próximo encontrado.</p>
             </div>
           ) : (
             appointments.map((appointment) => {
-              const { time } = formatAppointmentInfo(appointment);
+              const { time, fullDateString } = formatAppointmentInfo(appointment);
               
               return (
-                <div key={appointment.id} className="p-4 bg-green-50 rounded-2xl border border-green-100 hover:bg-green-100/50 transition-colors">
+                <div key={appointment.id} className="p-3 bg-green-50 rounded-xl border border-green-100 hover:bg-green-100/50 transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-base truncate">
                         {appointment.cliente_nome}
                       </h3>
-                      <p className="text-gray-700 font-medium">
+                      <p className="text-gray-700 text-sm font-medium truncate">
                         {appointment.servico_nome}
                       </p>
+                      <p className="text-gray-500 text-xs mt-1">
+                        {fullDateString}
+                      </p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-green-600 font-bold text-xl mb-1">
+                    <div className="text-right ml-3">
+                      <div className="text-green-600 font-bold text-lg">
                         {time}
                       </div>
                       {appointment.servico_preco > 0 && (
-                        <div className="text-gray-700 font-semibold">
+                        <div className="text-gray-700 font-semibold text-sm">
                           R$ {appointment.servico_preco.toFixed(2).replace('.', ',')}
                         </div>
                       )}
@@ -189,20 +194,22 @@ const AppointmentsList = ({ empresaId }: AppointmentsListProps) => {
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-4 text-gray-600 text-sm">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        <span>{appointment.profissional_nome}</span>
+                    <div className="flex items-center gap-3 text-gray-600 text-xs min-w-0">
+                      <div className="flex items-center gap-1 truncate">
+                        <User className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{appointment.profissional_nome}</span>
                       </div>
                       {appointment.servico_duracao > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Clock className="w-3 h-3" />
                           <span>{appointment.servico_duracao}min</span>
                         </div>
                       )}
                     </div>
                     
-                    {getStatusBadge(appointment.status)}
+                    <div className="ml-2 flex-shrink-0">
+                      {getStatusBadge(appointment.status)}
+                    </div>
                   </div>
                 </div>
               );
