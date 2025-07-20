@@ -133,14 +133,61 @@ const BookingPage = () => {
     fetchCompanyData();
   }, [slug, toast]);
 
-  // Horários disponíveis baseados na configuração da empresa
+  // Horários disponíveis baseados na configuração da empresa e bloqueios
   const getAvailableTimes = async (selectedDate?: Date): Promise<string[]> => {
     if (!empresa?.horarios_funcionamento || !selectedDate) {
       return [];
     }
     
     const module = await import('@/utils/timeUtils');
-    return module.generateAvailableTimes(empresa.horarios_funcionamento, selectedDate);
+    const allTimes = module.generateAvailableTimes(empresa.horarios_funcionamento, selectedDate);
+    
+    // Buscar bloqueios para a data selecionada
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    
+    const { data: bloqueios, error: bloqueioError } = await supabase
+      .from('bloqueios')
+      .select('hora_inicio, hora_fim')
+      .eq('empresa_id', empresa.id)
+      .eq('data', selectedDateStr);
+
+    if (bloqueioError) {
+      console.error('Erro ao buscar bloqueios:', bloqueioError);
+      return allTimes; // Retorna todos os horários se houver erro
+    }
+
+    // Filtrar horários que estão bloqueados
+    const availableTimes = allTimes.filter(time => {
+      const timeWithSeconds = time + ':00';
+      
+      // Verificar se o horário está em algum bloqueio
+      const isBlocked = bloqueios?.some(bloqueio => {
+        return timeWithSeconds >= bloqueio.hora_inicio && timeWithSeconds < bloqueio.hora_fim;
+      });
+      
+      return !isBlocked;
+    });
+
+    // Buscar agendamentos existentes para filtrar horários ocupados
+    const { data: agendamentos, error: agendamentosError } = await supabase
+      .from('agendamentos')
+      .select('horario')
+      .eq('empresa_id', empresa.id)
+      .eq('data_agendamento', selectedDateStr)
+      .eq('status', 'agendado - pendente de confirmação');
+
+    if (agendamentosError) {
+      console.error('Erro ao buscar agendamentos:', agendamentosError);
+      return availableTimes;
+    }
+
+    // Filtrar horários que já têm agendamentos
+    const finalAvailableTimes = availableTimes.filter(time => {
+      const timeWithSeconds = time + ':00';
+      return !agendamentos?.some(agendamento => agendamento.horario === timeWithSeconds);
+    });
+
+    return finalAvailableTimes;
   };
 
   if (loading) {

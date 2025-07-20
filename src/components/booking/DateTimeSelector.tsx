@@ -66,19 +66,26 @@ const DateTimeSelector = ({
           Escolha o Horário *
         </label>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-          {availableTimes.map((time) => (
-            <button
-              key={time}
-              className={`p-3 text-sm border rounded-lg transition-all ${
-                selectedTime === time
-                  ? 'border-blue-500 bg-blue-500 text-white'
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}
-              onClick={() => onTimeSelect(time)}
-            >
-              {time}
-            </button>
-          ))}
+          {availableTimes.length > 0 ? (
+            availableTimes.map((time) => (
+              <button
+                key={time}
+                className={`p-3 text-sm border rounded-lg transition-all ${
+                  selectedTime === time
+                    ? 'border-blue-500 bg-blue-500 text-white'
+                    : 'border-gray-200 hover:border-blue-300'
+                }`}
+                onClick={() => onTimeSelect(time)}
+              >
+                {time}
+              </button>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-4 text-gray-500">
+              <p>Nenhum horário disponível para esta data.</p>
+              <p className="text-sm">Escolha outra data ou entre em contato.</p>
+            </div>
+          )}
         </div>
       </div>
     </>
