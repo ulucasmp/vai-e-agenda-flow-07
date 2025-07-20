@@ -7,6 +7,11 @@ interface WorkingHour {
   end: string;
 }
 
+interface WorkingHourShifts {
+  active: boolean;
+  shifts: { start: string; end: string; }[];
+}
+
 export interface CompanySettings {
   name: string;
   type: string;
@@ -15,7 +20,7 @@ export interface CompanySettings {
   logo: string | null;
   businessPhoto: string | null;
   workingHours: {
-    [key: string]: WorkingHour;
+    [key: string]: WorkingHour | WorkingHourShifts | any;
   };
 }
 
