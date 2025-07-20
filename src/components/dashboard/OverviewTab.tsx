@@ -5,6 +5,7 @@ import WeeklySummary from './WeeklySummary';
 import BookingLinkCard from './BookingLinkCard';
 import AppointmentsList from './AppointmentsList';
 import DayAppointmentsModal from './DayAppointmentsModal';
+import { useEmpresa } from '@/hooks/useEmpresa';
 
 interface Professional {
   id: string;
@@ -49,6 +50,7 @@ interface OverviewTabProps {
 const OverviewTab = ({ companyData, professionals, services, appointments }: OverviewTabProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { empresa } = useEmpresa();
 
   const activeProfessionals = professionals.filter(p => p.active);
   const activeServices = services.filter(s => s.active);
@@ -142,7 +144,7 @@ const OverviewTab = ({ companyData, professionals, services, appointments }: Ove
           </div>
           
           {/* Próximos Agendamentos antes do Resumo da Semana */}
-          <AppointmentsList appointments={appointmentsForList} />
+          <AppointmentsList empresaId={empresa?.id} />
           
           <WeeklySummary appointments={appointments} onDaySelect={handleDaySelect} />
         </div>
