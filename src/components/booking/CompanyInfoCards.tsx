@@ -52,7 +52,7 @@ const CompanyInfoCards = ({ companySettings }: CompanyInfoCardsProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {Object.entries(companySettings.workingHours).map(([day, hours]) => {
+              {['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'].map((day) => {
                 const dayNames: { [key: string]: string } = {
                   segunda: 'Segunda-feira',
                   terca: 'Terça-feira',
@@ -63,8 +63,24 @@ const CompanyInfoCards = ({ companySettings }: CompanyInfoCardsProps) => {
                   domingo: 'Domingo'
                 };
                 
-                // Type assertion to ensure hours has the correct type
-                const workingHour = hours as { active: boolean; start: string; end: string };
+                const hours = companySettings.workingHours[day];
+                
+                // Verificar se está no novo formato (com shifts) ou antigo
+                const isNewFormat = hours && 'shifts' in hours;
+                
+                let displayText = 'Fechado';
+                
+                if (hours?.active) {
+                  if (isNewFormat && hours.shifts && Array.isArray(hours.shifts) && hours.shifts.length > 0) {
+                    // Novo formato: múltiplos turnos
+                    displayText = (hours.shifts as { start: string; end: string }[])
+                      .map((shift) => `${shift.start} - ${shift.end}`)
+                      .join(', ');
+                  } else if (!isNewFormat && 'start' in hours && 'end' in hours) {
+                    // Formato antigo: um só turno
+                    displayText = `${hours.start} - ${hours.end}`;
+                  }
+                }
                 
                 return (
                   <div key={day} className="flex justify-between items-center py-1">
@@ -72,7 +88,7 @@ const CompanyInfoCards = ({ companySettings }: CompanyInfoCardsProps) => {
                       {dayNames[day]}
                     </span>
                     <span className="text-gray-600">
-                      {workingHour.active ? `${workingHour.start} - ${workingHour.end}` : 'Fechado'}
+                      {displayText}
                     </span>
                   </div>
                 );
